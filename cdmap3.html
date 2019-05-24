@@ -8,7 +8,14 @@
     <script src="./js/vue.js"></script>
     <script src="./js/jquery-3.3.1.js"></script>
     <script src="./js/draw.js"></script>
-    <script type="text/javascript" src="http://192.168.0.104:8082/cd/static/bdmap/map_load.js"></script>
+    <script src="./js/echarts.min.js"></script>
+
+
+
+    <script type="text/javascript" src="http://127.0.0.1/cd/static/bdmap/map_load.js"></script>
+    <script src="./js/heatmap.min.js"></script>
+    <!--<script type="text/javascript" src="http://api.map.baidu.com/getscript?v=3.0&ak=Dn7WS2XQ8OuAN6oIP9dHieHOOsqKIjOt"></script>-->
+    <!--<script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>-->
 
     <style>
         #map_demo {
@@ -24,20 +31,28 @@
             right: 20px;
             top: 20px;
         }
+
+    </style>
+    <style>/*去除百度地图版权*/
+    .anchorBL{
+        display:none;
+    }
     </style>
 </head>
 <body>
+
 <div id="app">
     <div id="map_demo" ref="allmap"></div>
     <div class='wss'>
         <!--<button  style="float:left;" @click="drawDist('营子区')">营子区</button>-->
         <!--<button  style="float:left;" @click="drawDist('双桥区')">双桥区</button>-->
-        <!--<button  style="float:left;" @click="drawDist('高新区')">高新区</button>-->
+        <!--<button  style="float:left;" @click="heatMap('负载率')">负载率热力图</button>-->
         <!--<button  style="float:left;" @click="drawScope('my513')">my513</button>-->
         <!--<button  style="float:left;" @click="drawLine('ml514')">ml514</button>-->
         <!--&lt;!&ndash;<button  style="float:left;" @click="drawLine('yd511')">yd511</button>&ndash;&gt;-->
         <!--<button  style="float:left;" @click=" drawCD()">承德市</button>-->
-        <!--<button  style="float:left;" @click=" drawPoint(150671000000054)">设备点2</button>-->
+        <button  style="float:left;" @click=" drawPoint(110674000000008)">设备点1</button>
+        <button  style="float:left;" @click=" drawPoint(110681500000007)">设备点2</button>
         <!--<button  style="float:left;" @click="zoomIn()">放大</button>-->
         <!--<button  style="float:left;" @click="showInfo(1)">自动</button>-->
         <!--<button  style="float:left;" @click="addCheckbox('110')">110</button>-->
@@ -47,6 +62,8 @@
 
 
     </div>
+
+
 </div>
 <script type="text/javascript">
     var vm = new Vue({
@@ -74,6 +91,7 @@
             selectedPoint:[],
             selectedPoint2:[],//选中的那个点
             selectedLine:[],
+            selectedLine_s:[],
             scopePoint:[], // 画供电范围的点
             dist:'',
             flines:[],
@@ -83,7 +101,9 @@
             my513:[],
             psource: '',
             ptarget: '',
-            fline:[]
+            fline:[],
+            heatmapOverlay:null,
+            heatPoints:[]
         },
         mounted () {
 
@@ -110,13 +130,49 @@
                 this.checkbox1.push(value)
                 this.showInfo(2)
             },
+            //筛选
             setCheckbox(value){
                 this.checkbox1 =[]
                 var arr = ["abc","dc","gah"]
                 arr =value.split(',');
                 this.checkbox1.push(...arr)
-                console.log(this.checkbox1)
                 this.showInfo(2)
+            },
+            //    // 获取当前区域的负载率 或者 户均容量
+            showFZL(_dist, _type){
+                var that = this
+                that.heatPoints = []
+                if(that.heatmapOverlay != null){
+                    that.heatmapOverlay.hide()
+                }
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+                    type: "POST",
+                    data: '{"types":["配变"],"dist":"'+_dist+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+                        console.log(data)
+                        for(let element of data){
+                            that.heatPoints.push({
+                                "lng":element.lg,
+                                "lat":element.lat,
+                                "count":300  // element.fzl   element.hjrl
+                            })
+                        }
+                        console.log(that.heatPoints)
+
+                    }
+                })
+            },
+            //画热力图
+            heatMap(_type){
+                this.showFZL(this.dist,_type)
+                this.heatmapOverlay = new BMapLib.HeatmapOverlay({"radius":20});
+                this.map.addOverlay(this.heatmapOverlay);
+                this.heatmapOverlay.setDataSet({data:this.heatPoints,max:400});
+//                this.heatmapOverlay.show();
             },
             //承德市区域外 黑色
 			onCd1(){
@@ -154,7 +210,6 @@
                     dataType:"json",
                     async:false,
                     success: function (data) {
-                        console.log(data)
                         that.border = data
                         var dd =[]
                         for(let bb of that.border){
@@ -181,7 +236,6 @@
                     success: function(data) {//请求成功完成后要执行的方法
 //                        var result = JSON.stringify(data); //json对象转成字符串
                         that.point_bdz = data;
-						console.log(data)
                     }
                 })
                 $.ajax({
@@ -194,14 +248,14 @@
                     success: function(data) {//请求成功完成后要执行的方法
 //                        var result = JSON.stringify(data); //json对象转成字符串
                         that.line_bdz = data;
-							console.log(data)
                     }
                 })
             },
             drawCD(){
                 this.dist = '承德市'
                 this.flines = []
-			         if(this.allMarker.length != 0){
+                this.map.removeOverlay(this.heatmapOverlay)
+			    if(this.allMarker.length != 0){
                     for (let item of this.allMarker) {
                         this.map.removeOverlay(item)  // 清理地图上的市级的点线
                     }
@@ -281,12 +335,12 @@
 							switch(po.voltage){
 							  case 220:
 							   line_color = 'purple'
-							   line_style = 'dashed'
+							   line_style = 'solid'
 							   line_weight = 2
 								break
 							  case 110:
 								line_color = 'red'
-								line_style = 'dashed'
+								line_style = 'solid'
 								line_weight = 2
 								break
 							  case 35:
@@ -312,8 +366,11 @@
                     li["line"]=polygon
                     this.selectedLine.push(polygon)
                 }
-                this.map.centerAndZoom(new BMap.Point(117.972845,40.955677),11)
+                this.map.centerAndZoom(new BMap.Point(117.972845,41.23822764),11)
                 this.showInfo(1);
+
+
+
             },
 			//测试
 			test(){
@@ -346,7 +403,6 @@
 				  line = this.line_d
 				}
 			  }
-                console.log(point)
                 // 自动
                 if(e ===1){
                     for(let po of this.selectedPoint2){
@@ -492,7 +548,6 @@
                     success: function(data) {//请求成功完成后要执行的方法
 //                        var result = JSON.stringify(data); //json对象转成字符串
                         that.point_d = data;
-                        console.log(data)
 
                     }
                 })
@@ -504,7 +559,6 @@
                     dataType:"json",
                     async:false,
                     success: function(data) {//请求成功完成后要执行的方法
-                        console.log(data)
 //                        var result = JSON.stringify(data); //json对象转成字符串
                         that.line_d = data;
 
@@ -549,13 +603,11 @@
 //                let map = new BMap.Map('map_demo')
                 this.map = map
 //                map.centerAndZoom(new BMap.Point(117.585671, 41.422625), 9)
-                map.setCurrentCity('承德')
+                var point = new BMap.Point(117.418261, 39.921984);
+                map.centerAndZoom(point,9);
                 map.enableScrollWheelZoom(true)
 				this.onCd1()
                 this.drawCD()
-                this.setCheckbox(124)
-
-
             },
             //获取配变
             getPbData(_line){
@@ -571,7 +623,6 @@
                     success: function(data) {//请求成功完成后要执行的方法
 //                        var result = JSON.stringify(data); //json对象转成字符串
                         that.pb = data;
-                        console.log(that.pb)
                     }
                 })
             },
@@ -589,7 +640,6 @@
                     success: function(data) {//请求成功完成后要执行的方法
 //                        var result = JSON.stringify(data); //json对象转成字符串
                         that.hb = data;
-                        console.log( data)
                     }
                 })
             },
@@ -630,7 +680,7 @@
                         var p1 = new BMap.Point(pp.lg, pp.lat)
                         dd.push(p1)
                     }
-                    var polygon = new BMap.Polygon(dd, {strokeColor: '#CD0000', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#CD0000' ,fillOpacity: 0.8 })
+                    var polygon = new BMap.Polygon(dd, {strokeColor: '#3A5FCD', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#3A5FCD' ,fillOpacity: 0.6 })
                     this.map.addOverlay(polygon)
                     this.wjj.push(polygon)
                 }
@@ -716,6 +766,10 @@
                         that.map.addOverlay(marker)
                         marker.setLabel(label)
                         that.selectedPoint2.push(marker)
+//						//窗口显示选中点的相关信息
+//						var content = "设备名称："+po.name+"<br>"+" 横坐标："+po.lg+"<br>" +"纵坐标："+po.lat
+//                         that.openInfo(po.lg, po.lat,content)
+						
                         // 如果该点type为配变，添加供电区域
                         if(po.type==='配变'){
                             // 画户表连线
@@ -725,7 +779,7 @@
 							  var p1  = new BMap.Point(pp.lg, pp.lat)
 							  dd.push(p1)
 							}
-						   var polygon = new BMap.Polygon(dd, {strokeColor: '#CD0000', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#CD0000' ,fillOpacity: 0.8 })
+						   var polygon = new BMap.Polygon(dd, {strokeColor: '#3A5FCD', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#3A5FCD' ,fillOpacity: 0.6})
 							that.map.addOverlay(polygon)
 							that.wjj.push(polygon)
 					
@@ -733,12 +787,24 @@
                     }
                 })
             },
-
+		 //展示信息窗口
+		  openInfo(x,y,content){
+			  var opts ={
+				  width:200,
+				  height:200,
+				  title:'设备信息',
+				  enableAutoPan:false
+				}
+			  var point =new BMap.Point(x,y)
+			  var infoWindow = new BMap.InfoWindow(content,opts)
+			  this.map.openInfoWindow(infoWindow,point)  // 在地图上加载信息窗口，（窗口的内容，窗口的位置）
+			},
             // 以区域放大居中
             drawDist(_dist){
                 this.getDistData(_dist)
                 this.dist = _dist
                 this.flines = []
+                this.map.removeOverlay(this.heatmapOverlay)
                 var that = this
                 if(this.allMarker.length != 0 ){
                     for(let pp of this.allMarker){
@@ -840,12 +906,12 @@
 								  switch(po.voltage){
 									case 220:
 									line_color = 'purple'
-									line_style = 'dashed'
+									line_style = 'solid'
 									line_weight = 2
 									  break
 									case 110:
 									  line_color = 'red'
-									  line_style = 'dashed'
+									  line_style = 'solid'
 									  line_weight = 2
 									  break
 									case 35:
@@ -903,7 +969,6 @@
                         this.map.removeOverlay(item)  // 先清理地图上的所选线路
                     }
                 }
-                console.log(this.point_l)
                 //1. 画出该线路上的所有点 包括配变、开闭站、环网柜、杆塔
                 for(let po of this.point_l){
                     var icon = ''
@@ -1015,6 +1080,11 @@
             //画一根线段 如 营子-梅岭沟  参数是线段的起始点的id
             drawLine_s(sp,tp){
                    this.getline_s(sp,tp)
+                if(this.selectedLine_s.length != 0){
+                    for (let item of this.selectedLine_s) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
                 var p1,p2
 //
                 for(let po of this.point_d){
@@ -1027,7 +1097,7 @@
                     if(p1&&p2){
                         var polygon = new BMap.Polyline([p1, p2], {strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 1})
                         this.map.addOverlay(polygon)
-                        this.selectedLine.push(polygon)
+                        this.selectedLine_s.push(polygon)
                     }
                 }
                 this.map.centerAndZoom(p1,15); // 放大居中

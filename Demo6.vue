@@ -38,6 +38,25 @@
              <el-input placeholder="请输入内容" v-model="input1" style="width:188px;height:50px" id="input1" @keyup.enter.native="search()">
        
             </el-input>
+            <br>
+            <el-select  id="select1" v-model="value1" filterable  placeholder="搜索设备"  clearable   remote    default-first-option  :loading="loading"
+              :remote-method="remoteMethod"    @change="search1" >
+              <el-option
+                v-for="(item,index)  in options1"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name" >
+              </el-option>
+            </el-select>
+              <el-select id="select2" v-model="value2" filterable  placeholder="搜索线路"  clearable   remote    default-first-option  :loading="loading"
+              :remote-method="remoteMethod2"   @change="search2"   >
+              <el-option
+                v-for="(item,index)  in options2"
+                :key="item"
+                :label="item"
+                :value="item" >
+              </el-option>
+            </el-select>
 
           </div>
           <el-button @click="closeDG" style="float:right" id="small_dg"></el-button>
@@ -47,6 +66,7 @@
           <br>
         <div id="map_control">
           <el-button id="bt_zd" :type="zd_bg" size="small" style="width:100px" @click="showInfo(1)">自动</el-button>
+          <el-button  type="success" size="small" style="width:100px" @click="showLabel()">显示label</el-button>
           <br>
           <el-checkbox-group v-model="checkbox1" size="small" style="margin-top:10px" @change="showInfo(2)">
           <el-checkbox-button label="500" style="width:70px">500kv</el-checkbox-button>
@@ -69,8 +89,51 @@
       </div>
       </el-col>
       <el-col :span="5"  >
-            <div id="properties">
-            </div>
+        <div id="properties">
+          <div id="properPB"  style="display:none">
+            型号：{{pb_xh}}
+            <br>
+            线损:{{pb_xs}}
+            <br>
+            供电户数:{{pb_gdhs}}
+            <br>
+            <el-button @click="dialogVisible1 =true">饼状图</el-button>
+            <br>
+            <el-button @click="dialogVisible2 =true">曲线图</el-button>
+              <el-dialog title="饼状图数据展示" :visible.sync = "dialogVisible1" width="800px" center>
+                <el-row>
+                  <el-col :span="16">
+                    <div id="mychart1" style="width:580px; ">
+                      <ve-pie :data="chartData"  :tooltip-visible="true" :legend-visible="true" ></ve-pie>
+                    </div>
+                  </el-col>
+                </el-row>
+                <span slot="footer" class="dialog-footer">
+                  <el-button @click="dialogVisible1 = false">取 消</el-button>
+                  <el-button type="primary" @click="dialogVisible1 = false">确 定</el-button>
+                </span>
+              </el-dialog>
+                
+              <el-dialog title="曲线图数据展示" :visible.sync = "dialogVisible2" width="800px" center>
+                <el-row>
+                  <el-col :span="16">
+                    <div id="mychart2" style="width:580px; ">
+                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
+                    </div>
+                  </el-col>
+                </el-row>
+              
+                
+                <span slot="footer" class="dialog-footer">
+                  <el-button @click="dialogVisible2 = false">取 消</el-button>
+                  <el-button type="primary" @click="dialogVisible2 = false">确 定</el-button>
+                </span>
+              </el-dialog>
+          </div>
+          <div id="properXL" style="display:none">
+             这里是线路的相关数据
+          </div>
+        </div>
       </el-col>
     </el-row>
   </div>
@@ -84,8 +147,43 @@ export default {
   inject:['reload'], //注入依赖
   name: 'Demo5',
   data () {
+    this.chartSettings = {
+      area: true
+    }
     return {
+      dialogVisible1:false,
+      dialogVisible2:false,
+      chartData: {
+        columns: ['状态', '数量'],
+        rows: [
+          { '状态': '设备巡视中', '数量': '10' },
+          { '状态': '设备正常', '数量': '26' },
+          { '状态': '设备故障', '数量': '5' }
+        ]
+      },
+      chartData1: {
+        columns: ['时段', '资产状况'],
+        rows: [
+          { '时段': '1', '资产状况': '120' },
+          { '时段': '2', '资产状况': '100' },
+          { '时段': '3', '资产状况': '80' },
+          { '时段': '4', '资产状况': '90' },
+          { '时段': '5', '资产状况': '76' },
+          { '时段': '6', '资产状况': '93' },
+          { '时段': '7', '资产状况': '60' },
+          { '时段': '8', '资产状况': '75' },
+          { '时段': '9', '资产状况': '40' }
+        ]
+      },
+      pb_xh:'S9',
+      pb_xs:'20',
+      pb_gdhs:'300',
       input1:'',
+      value1: '',
+      value2: '',
+      options1:[], // 模糊搜索的选项
+      options2:[], // 模糊搜索的选项
+      loading:false,
       checkbox1:[],
       zd_bg:'primary',
       imgurl: '', //承德市的网架图
@@ -104,6 +202,7 @@ export default {
       point_d:[],
       line_d:[],
       point_selected:null, // 选中点
+      point_info:[],
       pb:[],  // 所有配变
       hb:[], // 户表
       pId:'', // 当前选中设备的id
@@ -142,7 +241,7 @@ export default {
       }
       ],
       value: window.localStorage.getItem('select_value') || '1',
-      msg:'nihao',
+      msg:'这是测试地图信息窗口的！！！',
       client: '', //mqtt 
       topic: 'gridmap' ,// 订阅的主题,
       heatPoints:[],
@@ -168,6 +267,13 @@ export default {
       handler: function (value) {
         // 将value最新值保存到localstorage
         window.localStorage.setItem('select_value', value)
+      }
+    },
+    value1: {
+      deep: true, // 深度简述
+      handler: function (value) {
+        // 将value最新值保存到localstorage
+        window.localStorage.setItem('select_value1', value)
       }
     }
 
@@ -213,12 +319,7 @@ export default {
       this.msg = "{\"client\":\"left middle\",\"actionType\":\"switch_line\",\"parameters\":{\"fline\":\""+_line+"\",\"dist\":\""+this.dist+"\"}}"
       this.sendMsg(this.msg)
     },
-    //获取边界点，并绘制连线，所有区县的
-    getAllBorder(){
-
-    },
-    //获取边界点，并绘制连线，当前区县的
-    getDistBorder(_dist){
+    showLabel(){
 
     },
     // 搜索
@@ -234,6 +335,70 @@ export default {
         this.getPoint_s(this.input1)// 根据名称定位点
       }
     },
+        // 搜索 设备
+    search1(){
+      if(this.value2 !=''){
+         this.getPoint_s(this.value1)// 根据名称定位点
+      }
+    },
+         // 搜索 线路
+    search2(){
+      if(this.value2 !=''){
+        this.sendLine(this.value2)// 根据名称定位点
+      }
+      
+
+    },
+    //模糊搜索 设备
+    remoteMethod(query){
+      if(query !== ''){
+        this.loading = true
+        setTimeout(() => {
+          this.loading = false
+          // 根据 input1的内容 搜索设备
+          this.getDevice(query)
+        })
+        
+      }
+      else {
+        this.options1 = []
+      }
+    },
+    getDevice(value){
+      post({
+        url: 'http://127.0.0.1:8089/web/map/queryPoint',
+        method: 'post',
+        data: {name:value}
+      }).then(response  => {
+       console.log(response)
+       this.options1 = response
+      })
+    },
+       //模糊搜索 线路
+    remoteMethod2(query){
+      if(query !== ''){
+        this.loading = true
+        setTimeout(() => {
+          this.loading = false
+          // 根据 input1的内容 搜索设备
+          this.getLine(query)
+        })
+        
+      }
+      else {
+        this.options2 = []
+      }
+    },
+     getLine(value){
+      post({
+        url: 'http://127.0.0.1:8089/web/map/queryFline',
+        method: 'post',
+        data: {fline:value}
+      }).then(response  => {
+       console.log(response)
+       this.options2 = response
+      })
+    },
     //通过name 搜索变电站，并定位
     getPoint_s(value){
       post({
@@ -246,18 +411,20 @@ export default {
         this.drawPoint()
       })
     },
-    //通过id 获取当前选中点的信息
+    //通过id 获取当前选中点的信息  地理图 ，右屏的也在这里获取
     getPoint(_point){
+      document.getElementById('properPB').style.display = 'block'
       post({
         url: 'http://127.0.0.1:8089/web/map/queryPoint',
         method: 'post',
         data: {id:_point}
       }).then(response  => {
         this.point_selected = response[0]
+        // this.point_info.push({"name":response[0].name,"type":response[0].type,"lg":response[0].lg,"lat":response[0].lat})
         this.drawPoint()
       })
     },
-    //当前选中设备点居中
+    //当前选中设备点居中   地理图
     drawPoint(){
         if(this.selectedPoint2.length != 0 ){
                     for(let pp of this.selectedPoint2){
@@ -271,7 +438,7 @@ export default {
                 }
                 
         var p1 = new BMap.Point(this.point_selected.lg, this.point_selected.lat)
-        this.map.centerAndZoom(p1,17)
+        // this.map.centerAndZoom(p1,17)
         let marker = new BMap.Marker(p1)
         this.map.addOverlay(marker)
         this.selectedPoint2.push(marker)
@@ -281,7 +448,7 @@ export default {
               var p1  = new BMap.Point(pp.lg, pp.lat)
               dd.push(p1)
             }
-                 var polygon = new BMap.Polygon(dd, {strokeColor: '#CD0000', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#CD0000' ,fillOpacity: 0.8})
+                 var polygon = new BMap.Polygon(dd, {strokeColor: '#3A5FCD', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#3A5FCD' ,fillOpacity: 0.6})
                     this.map.addOverlay(polygon)
                     this.wjj.push(polygon)
           }
@@ -298,15 +465,7 @@ export default {
     },
     // 隐藏接线图
     hideDetail(){
-      // document.getElementById('img').style.display = 'none'
-      //  document.getElementById('line_name').style.display = 'none'
-      //  var count =this.flines.length
-      //  if(count ===0){
-      //    this.changeSelect()
-      //  }else{
-      //     count = count-1
-      //  }
-        //1.如果当前dist是营子区，从设备详细跳转到营子区
+             //1.如果当前dist是营子区，从设备详细跳转到营子区
 
         //1.如果当前dist为单线图，如果详情页可见，从详情页返回单线图
 
@@ -367,8 +526,6 @@ export default {
             "count":300  // element.fzl   element.hjrl
           })
         });
-        console.log(this.heatPoints)
-        console.log(response)
       //发送mqtt消息
       that.heatMap()
       that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"dist\":\""+_dist+"\",\"type\":\""+_type+"\"}}"
@@ -377,7 +534,6 @@ export default {
     },
     //画热力图
     heatMap(){
-      console.log(this.heatPoints)
       this.heatmapOverlay = new BMapLib.HeatmapOverlay({"radius":20});
       this.map.addOverlay(this.heatmapOverlay);
       this.heatmapOverlay.setDataSet({data:this.heatPoints,max:400});
@@ -418,7 +574,7 @@ export default {
            var p1 = new BMap.Point(pp.lg, pp.lat)
            dd.push(p1)
         }
-        var polygon = new BMap.Polygon(dd, {strokeColor: '#CD0000', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#CD0000' ,fillOpacity: 0.8})
+        var polygon = new BMap.Polygon(dd, {strokeColor: '#3A5FCD', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#3A5FCD' ,fillOpacity: 0.6})
         this.map.addOverlay(polygon)
         this.wjj.push(polygon)
       }
@@ -449,28 +605,25 @@ export default {
     },
     //放大
     zoomIn () {
-      // this.graph.zoomIn()
+      this.graph.zoomIn()
       let z =this.map.getZoom()
       z = z+2
         this.map.setZoom(z)
         if(this.dist === '承德市'){
            this.showInfo(1)
         }
-
-    
-        this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
+      this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
       this.sendMsg(this.msg)
     },
     //缩小
     zoomOut () {
-      // this.graph.zoomOut()
+      this.graph.zoomOut()
        let z =this.map.getZoom()
       z = z-2
           this.map.setZoom(z)
       if(this.dist === '承德市'){
           this.showInfo(1)
         }
-      // this.map.zoomOut()
         this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"缩小\"}}"
       this.sendMsg(this.msg)
     },
@@ -495,6 +648,7 @@ export default {
     //绘制承德市地理图
     drawCD(){
       this.flines = []
+      this.map.removeOverlay(this.heatmapOverlay)
       this.dist = '承德市'
            if(this.allMarker.length != 0){
                     for (let item of this.allMarker) {
@@ -535,7 +689,7 @@ export default {
            icon = new BMap.Icon('/cd/static/bdmap/images/cd500.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
         }
         var p0 = new BMap.Point(item.lg, item.lat)
-        var m0 = new BMap.Marker(p0, { icon: icon })
+        var m0 = new BMap.Marker(p0, { icon: icon ,title:item.name})
         item["marker"]=m0
         item["isShow"]= 'true'
         this.allMarker.push(m0)
@@ -544,10 +698,16 @@ export default {
         var t = item.name.indexOf('变')
         var label = new BMap.Label(item.name.substring(0,t), { offset: new BMap.Size(-25, 45) })
         label.setStyle({borderColor: '#4682B4',borderWidth:'4px',fontSize:'20px',fontFamily:'黑体',borderStyle:'double',fontWeight:'bold'})
+
         m0.setLabel(label)
-        m0.addEventListener('mouseover', function () {
+ 
+        m0.addEventListener('click', function (e) {
           let id = item.id
           that.onPoint(id)
+                // 不同的设备类型，展示的content 可以不同，按照item.type来区分
+          var content = "设备名称："+item.name+"<br>"+" 横坐标："+item.lg+"<br>" +"纵坐标："+item.lat 
+          that.openInfo(item.lg, item.lat,content)  //显示选中点的相关信息
+         
         })
         }
         // 画线
@@ -565,12 +725,12 @@ export default {
                   switch(po.voltage){
                     case 220:
                     line_color = 'purple'
-                    line_style = 'dashed'
+                    line_style = 'solid'
                     line_weight = 2
                       break
                     case 110:
                       line_color = 'red'
-                      line_style = 'dashed'
+                      line_style = 'solid'
                       line_weight = 2
                       break
                     case 35:
@@ -594,9 +754,30 @@ export default {
             this.allMarker.push(polygon)
             li["line"]=polygon
             // this.selectedLine.push(polygon)
+      polygon.addEventListener('click',function(e){
+        var x = e.point.lng
+        var y = e.point.lat
+        var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
+        that.openInfo(x,y,content)
+      })
       }
-        this.map.centerAndZoom(new BMap.Point(117.972845,40.955677),11)
-        this.showInfo(1)
+      this.map.centerAndZoom(new BMap.Point(117.972845,40.955677),11)
+      this.showInfo(1)
+    },
+    //展示信息窗口
+    openInfo(x,y,content){
+      var opts ={
+          width:200,
+          height:200,
+          title:'设备信息',
+          enableAutoPan:false
+        }
+      var point =new BMap.Point(x,y)
+      var infoWindow = new BMap.InfoWindow(content,opts)
+      this.map.openInfoWindow(infoWindow,point)  // 在地图上加载信息窗口，（窗口的内容，窗口的位置）
+       //大屏相同位置显示信息窗口
+      this.msg = "{\"client\":\"middle\", \"actionType\":\"show_InfoWindow\", \"parameters\":{\"content\":\""+content+"\",\"x\":\""+x+"\",\"y\":\""+y+"\"}}"
+      this.sendMsg(this.msg)
     },
     // 获取区县地理图数据
     getDistData(_dist){
@@ -613,7 +794,6 @@ export default {
               data: {types:["变电站","开闭站","环网柜"],dist:_dist}
             }).then(response  => {
               that.line_d = response
-              console.log(response)
                 that.drawDist(_dist)
             })
           })
@@ -621,6 +801,7 @@ export default {
    // 绘制区县地理图，以区域放大居中
     drawDist(_dist){
       this.flines = []
+      this.map.removeOverlay(this.heatmapOverlay)
       if(this.allMarker.length != 0 ){
         for(let pp of this.allMarker){
           this.map.removeOverlay(pp)
@@ -709,9 +890,12 @@ export default {
                 item["marker"]=m0
                 item["isShow"]= 'true'
                 m0.setLabel(label)
-                m0.addEventListener('mouseover', function () {
+                m0.addEventListener('click', function () {
                   let id = item.id
                   that.onPoint(id)
+                  // 不同的设备类型，展示的content 可以不同，按照item.type来区分
+                  var content = "设备名称："+item.name+"<br>"+" 横坐标："+item.lg+"<br>" +"纵坐标："+item.lat 
+                  that.openInfo(item.lg, item.lat,content)  //显示选中点的相关信息
               })
             }
           
@@ -731,12 +915,12 @@ export default {
                   switch(po.voltage){
                   case 220:
                   line_color = 'purple'
-                  line_style = 'dashed'
+                  line_style = 'solid'
                   line_weight = 2
                     break
                   case 110:
                     line_color = 'red'
-                    line_style = 'dashed'
+                    line_style = 'solid'
                     line_weight = 2
                     break
                   case 35:
@@ -757,6 +941,12 @@ export default {
                   this.map.addOverlay(polygon)
                   li["line"]=polygon
                   this.selectedLine.push(polygon)
+        polygon.addEventListener('click',function(e){
+          var x = e.point.lng
+          var y = e.point.lat
+          var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
+          that.openInfo(x,y,content)
+        })
               
 
           }
@@ -846,12 +1036,15 @@ export default {
                   this.selectedPoint.push(m0)
                   m0.setLabel(label)
                   var that =this
-                  m0.addEventListener('mouseover',function() {
+                  m0.addEventListener('click',function() {
                     for (let item of that.wjj) {
                       that.map.removeOverlay(item)
                     }
                   let id = po.id
                   that.onPoint(id)
+                  // 不同的设备类型，展示的content 可以不同，按照item.type来区分
+                  var content = "设备名称："+po.name+"<br>"+" 横坐标："+po.lg+"<br>" +"纵坐标："+po.lat 
+                  that.openInfo(po.lg, po.lat,content)  //显示选中点的相关信息
                     // 如果该点type为配变，添加供电区域
                   if(po.type==='配变'){
                       // 画户表连线
@@ -861,7 +1054,7 @@ export default {
                       var p1  = new BMap.Point(pp.lg, pp.lat)
                       dd.push(p1)
                     }
-                    var polygon = new BMap.Polygon(dd, {strokeColor: '#CD0000', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#CD0000' ,fillOpacity: 0.8 })
+                    var polygon = new BMap.Polygon(dd, {strokeColor: '#3A5FCD', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#3A5FCD' ,fillOpacity: 0.6 })
                     that.map.addOverlay(polygon)
                     that.wjj.push(polygon)
                 
@@ -893,6 +1086,12 @@ export default {
                       this.map.addOverlay(polygon)
                         li["line"]=polygon
                       this.selectedLine.push(polygon)
+                         polygon.addEventListener('click',function(e){
+        var x = e.point.lng
+        var y = e.point.lat
+        var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
+        that.openInfo(x,y,content)
+      })
 
               }
               this.map.centerAndZoom(p1,16); // 放大居中
@@ -901,22 +1100,22 @@ export default {
     change1 () {
       document.getElementById('bt_map').style.backgroundImage= 'url(' + require('@/components/images/bt_map2.png') + ')'
       document.getElementById('line_name').style.display = 'none'
-            document.getElementById('bt_web').style.backgroundImage= 'url(' + require('@/components/images/bt_web.png') + ')'
-              document.getElementById('map_control').style.display = 'block'
+      document.getElementById('bt_web').style.backgroundImage= 'url(' + require('@/components/images/bt_web.png') + ')'
+      document.getElementById('map_control').style.display = 'block'
 
-            document.getElementById('map').style.top='14px'
-            document.getElementById('map').style.left='98px'
-            document.getElementById('map').style.width='1374px'
-            document.getElementById('map').style.height='866px'
-            document.getElementById('map').style.zIndex=2
+      document.getElementById('map').style.top='14px'
+      document.getElementById('map').style.left='98px'
+      document.getElementById('map').style.width='1374px'
+      document.getElementById('map').style.height='866px'
+      document.getElementById('map').style.zIndex=2
 
-            document.getElementById('graphContainer').style.top='580px'
-            document.getElementById('graphContainer').style.left='1072px'
-            document.getElementById('graphContainer').style.width='400px'
-            document.getElementById('graphContainer').style.height='300px'
-            document.getElementById('graphContainer').style.zIndex=3
-            this.d2=document.getElementById('graphContainer')
-            },
+      document.getElementById('graphContainer').style.top='580px'
+      document.getElementById('graphContainer').style.left='1072px'
+      document.getElementById('graphContainer').style.width='400px'
+      document.getElementById('graphContainer').style.height='300px'
+      document.getElementById('graphContainer').style.zIndex=3
+      this.d2=document.getElementById('graphContainer')
+      },
     // 网架图为主窗口
     change2 () {
       document.getElementById('bt_map').style.backgroundImage= 'url(' + require('@/components/images/bt_map.png') + ')'
@@ -962,16 +1161,6 @@ export default {
           line = this.line_d
         }
       }
-        // if(this.dist ==='承德市'){
-        //   point = this.point_map_bdz
-        //   line = this.line_map_bdz
-        // } else if(this.flines.length !=0){
-        //   point = this.point_l
-        //    line = this.line_l
-        // } else {
-        //   point = this.point_d
-        //   line = this.line_d
-        // }
       // 自动
       if(e ===1){
          this.zd_bg = 'primary'
@@ -1134,6 +1323,12 @@ export default {
       if (!mxClient.isBrowserSupported()) {
         mxUtils.error('Browser is not supported!', 200, false)
       } else {
+        this.chartData.rows =  [
+          { '状态': '设备巡视中', '数量': '10' },
+          { '状态': '设备正常', '数量': '26' },
+          { '状态': '设备故障', '数量': '5' },
+           { '状态': '我是测试的', '数量': '5' }
+        ]
       // 画地图
         let map = new BMap.Map('map')
         this.map = map
@@ -1150,39 +1345,45 @@ export default {
         
         this.graph.panningHandler.useLeftButtonForPanning = true
         this.graph.setPanning(true)
-
+     var that =this
         // 容器大小自适应
-        this.graph.setResizeContainer(true);
-				// // 网架图缩放
-				// mxEvent.addMouseWheelListener(function(evt, up) { 
-				// if (up) { this.graph.zoomIn() } 
-				// else { this.graph.zoomOut() }
-        // mxEvent.consume(evt) })
+        // this.graph.setResizeContainer(true);
 
-          // 居中缩放
+				// // 网架图缩放
+				mxEvent.addMouseWheelListener(function(evt, up) { 
+				if (up) { that.graph.zoomIn() } 
+				else { that.graph.zoomOut() }
+        mxEvent.consume(evt) },{ passive: false })
+
         this.graph.centerZoom = true;
-        var that =this
+   
         let d1= document.getElementById('graphContainer')
         that.d2= document.getElementById('map')
 
         //图元选中事件
         this.graph.addListener(mxEvent.CLICK, function(sender, evt) { 
           that.cell = evt.getProperty('cell')
+          if(typeof that.cell != 'object') return
           let properDiv= document.getElementById('properties')
           // 点击图元，联动mqtt发消息
+          // 选中的是线段
           if(that.cell.source!=null){
-            properDiv.innerHTML= that.cell.source.id+ '   '+that.cell.target.id
+            // properDiv.innerHTML= that.cell.source.id+ '   '+that.cell.target.id
             // 线段联动
             // 获取线段的起始点坐标
+            document.getElementById('properXL').style.display = 'block'
+            document.getElementById('properPB').style.display = 'none'
             that.onLine(that.cell.source.id,that.cell.target.id) //发送起始点 给中左
             if(that.cell.value != null){
                 that.sendLine(that.cell.value) //根据单线图名称画 网架图和地理图，并发送消息  给中屏画单线图
             }else{
               that.drawLine_s(that.cell.source.id,that.cell.target.id)
             }
-          }else {
-            properDiv.innerHTML=that.cell.id
+          }else {   // 选中的设备点
+            // properDiv.innerHTML=that.cell.id
             // 点联动
+             document.getElementById('properXL').style.display = 'none'
+            document.getElementById('properPB').style.display = 'block'
             that.pId = that.cell.id
             that.pName = that.cell.value
             that.onPoint(that.pId)
@@ -1374,6 +1575,7 @@ export default {
       this.getYZ(this.dist) //画承德市网架图
       this.flines =[]
 
+
       document.getElementById('bt_cd').style.backgroundImage= 'url(' + require('@/components/images/bt_cd2.png') + ')'
       document.getElementById('bt_qx').style.backgroundImage= 'url(' + require('@/components/images/bt_qx.png') + ')'
 
@@ -1494,6 +1696,9 @@ export default {
 </script>
 
 <style>
+.body{
+  touch-action: none;
+}
 #web-body{
   height: 1081px;
   width: 1921px;
@@ -1527,8 +1732,9 @@ export default {
   background: url('/cd/static/bdmap/images/select_qx.png');
    width: 199px;
   height: 71px;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 800;
+  color:#3D3D3D;
   left:0px;
     position: absolute;
 
@@ -1600,6 +1806,20 @@ export default {
   height: 49px;
   top:15px;
     position: absolute;
+}
+#select1{
+  background-color: cadetblue;
+  font-family: '黑体';
+  color: black;  /*  设置字体颜色 */
+  font-size: 20px;
+  
+}
+#select2{
+  background-color: cadetblue;
+  font-family: '黑体';
+  color: black;  /*  设置字体颜色 */
+  width: 150px;
+  font-size: 20px;
 }
 #bt_gdfw {
    background: url('./images/gd.png');
