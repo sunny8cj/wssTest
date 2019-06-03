@@ -25,9 +25,8 @@
     </el-row>
   </div>
   <div id="web-main">
-    <el-row>
-      <el-col :span="18" >
-        <div id="dg">
+
+        <div id="bt_group">
           <div id="bt_detail">
             <el-button  @click="getPbData(flines)" id="bt_gdfw"></el-button>
             <el-button  @click="showFZL(dist,'负载率')" id="bt_fzl"></el-button>
@@ -35,10 +34,6 @@
             <el-button @click="showDetail(pId,pName)"  id="bt_sbxx"></el-button>
             <el-button  @click="hideDetail()" id="bt_back"></el-button>
 
-             <el-input placeholder="请输入内容" v-model="input1" style="width:188px;height:50px" id="input1" @keyup.enter.native="search()">
-       
-            </el-input>
-            <br>
             <el-select  id="select1" v-model="value1" filterable  placeholder="搜索设备"  clearable   remote    default-first-option  :loading="loading"
               :remote-method="remoteMethod"    @change="search1" >
               <el-option
@@ -87,8 +82,7 @@
       <div id="img">
         <img :src="imgurl">
       </div>
-      </el-col>
-      <el-col :span="5"  >
+
         <div id="properties">
           <div id="properPB"  style="display:none">
             型号：{{pb_xh}}
@@ -131,11 +125,81 @@
               </el-dialog>
           </div>
           <div id="properXL" style="display:none">
-             这里是线路的相关数据
+            <div class="biaoqian">
+              <div class="canshu"> 线路名称：{{xl.feederName}} </div>
+            </div>
+            <div class="biaoqian">
+               <div class="canshu">   所带配变数:{{xl.dmsSectionCount}}</div>
+            </div>
+             <div class="biaoqian">
+               <div class="canshu">  分支数:{{xl.dmsSectionCount}}</div>
+            </div>
+           <div class="biaoqian">
+               <div class="canshu">  容量:{{xl.ratedCurrent}}</div>
+            </div>
+            <div class="biaoqian">
+               <div class="canshu">  线路长度:{{xl.lineLength}}</div>
+            </div>
+           <div class="biaoqian">
+               <div class="canshu">  实时负荷:{{xl.activePower}}</div>
+            </div>
+            <div class="biaoqian">
+               <div class="canshu">  实时负载率:{{xl.currentLoading}}</div>
+            </div>
+            <div class="chart">
+          <div class="canshu2">   <el-button type="info" @click="dialogVisible1 =true" style="width:150px">历 史 负 荷</el-button></div>
+            </div>
+            <div class="chart">
+              <div class="canshu2"> <el-button type="info"  @click="dialogVisible2 =true" style="width:150px">历史载流量</el-button></div>
+            </div>
+            <div class="chart">
+               <div class="canshu2"> <el-button type="info"  @click="dialogVisible3 =true" style="width:150px">历史负载率</el-button></div>
+            </div>
+              <el-dialog title="饼状图数据展示" :visible.sync = "dialogVisible1" width="800px" center>
+                <el-row>
+                  <el-col :span="16">
+                    <div id="mychart1" style="width:580px; ">
+                      <ve-pie :data="chartData"  :tooltip-visible="true" :legend-visible="true" ></ve-pie>
+                    </div>
+                  </el-col>
+                </el-row>
+                <span slot="footer" class="dialog-footer">
+                  <el-button @click="dialogVisible1 = false">取 消</el-button>
+                  <el-button type="primary" @click="dialogVisible1 = false">确 定</el-button>
+                </span>
+              </el-dialog>
+                
+              <el-dialog title="曲线图数据展示" :visible.sync = "dialogVisible2" width="800px" center>
+                <el-row>
+                  <el-col :span="16">
+                    <div id="mychart2" style="width:580px; ">
+                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
+                    </div>
+                  </el-col>
+                </el-row>
+                <span slot="footer" class="dialog-footer">
+                  <el-button @click="dialogVisible2 = false">取 消</el-button>
+                  <el-button type="primary" @click="dialogVisible2 = false">确 定</el-button>
+                </span>
+              </el-dialog>
+
+              <el-dialog title="曲线图数据展示" :visible.sync = "dialogVisible3" width="800px" center>
+                <el-row>
+                  <el-col :span="16">
+                    <div id="mychart3" style="width:580px; ">
+                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
+                    </div>
+                  </el-col>
+                </el-row>
+                <span slot="footer" class="dialog-footer">
+                  <el-button @click="dialogVisible3 = false">取 消</el-button>
+                  <el-button type="primary" @click="dialogVisible3 = false">确 定</el-button>
+                </span>
+              </el-dialog>
+
           </div>
         </div>
-      </el-col>
-    </el-row>
+  
   </div>
 </div>
 </template>
@@ -151,8 +215,21 @@ export default {
       area: true
     }
     return {
+      xl:{
+        feederName:'我是测试数据', // 线路名称
+        dmsTransCount:'23', // 所带配变数
+        dmsSectionCount: '4', //分支数
+        ratedCurrent: '879',  //容量
+        activePower: 'gag', //实时负荷
+        lineLength: '122',  // 线路长度
+        currentLoading:'rywy',  // 实时负载率
+        currentLoadingHis: [] ,//负载率
+        activePowerHis: [], //历史负荷
+        ratedCurrentHis: [] // 载流量
+      },
       dialogVisible1:false,
       dialogVisible2:false,
+       dialogVisible3:false,
       chartData: {
         columns: ['状态', '数量'],
         rows: [
@@ -252,14 +329,14 @@ export default {
     this.init()
   },
   created: function() {
-    this.client = new Paho.MQTT.Client('127.0.0.1', 61623, 'wss_web'), // 第三个参数是clientID可以为空
-    this.client.connect({
-      onSuccess: this.onConnect,
-      userName: 'admin',
-      password: 'password'
-    });
-    this.client.onConnectedLost = this.onConnectedLost;
-    this.client.onMessageArrived = this.onMessageArrived;
+    // this.client = new Paho.MQTT.Client('127.0.0.1', 61623, 'wss_web'), // 第三个参数是clientID可以为空
+    // this.client.connect({
+    //   onSuccess: this.onConnect,
+    //   userName: 'admin',
+    //   password: 'password'
+    // });
+    // this.client.onConnectedLost = this.onConnectedLost;
+    // this.client.onMessageArrived = this.onMessageArrived;
   },
   watch: { // 监视
     value: {
@@ -280,44 +357,45 @@ export default {
   },
   methods: {
     // mqtt 相关
-    onConnectedLost : function(responseObject){  
-      console.log("onConnectionLost:"+responseObject.errorMessage);
-    },
-    onMessageArrived : function (message) {
-      console.log("onMessageArrived:"+message.payloadString);
-    },
-    onConnect:function onConnect() {
-      // Once a connection has been made, make a subscription and send a message.
-      console.log("onConnect");
-      this.client.subscribe(this.topic);
-      // message = new Paho.MQTT.Message("Hello");
-      // message.destinationName = "World";
-      // client.send(message);
-    },
-    // mqtt 消息发送
-    sendMsg(s){
-        //  s = this.stest
-      // 方法1
-        // var message = new Paho.MQTT.Message("Hello")
-        // message.destinationName = this.topic
-        // this.client.send(message)
-      // 方法2
-        this.client.send(this.topic,s,0)
-    },
+    // onConnectedLost : function(responseObject){  
+    //   console.log("onConnectionLost:"+responseObject.errorMessage);
+    // },
+    // onMessageArrived : function (message) {
+    //   console.log("onMessageArrived:"+message.payloadString);
+    // },
+    // onConnect:function onConnect() {
+    //   // Once a connection has been made, make a subscription and send a message.
+    //   console.log("onConnect");
+    //   this.client.subscribe(this.topic);
+    //   // message = new Paho.MQTT.Message("Hello");
+    //   // message.destinationName = "World";
+    //   // client.send(message);
+    // },
+    // // mqtt 消息发送
+    // sendMsg(s){
+    //     //  s = this.stest
+    //   // 方法1
+    //     // var message = new Paho.MQTT.Message("Hello")
+    //     // message.destinationName = this.topic
+    //     // this.client.send(message)
+    //   // 方法2
+    //     this.client.send(this.topic,s,0)
+    // },
     // 选中线路后的相关操作
     sendLine(_line){
       this.flines=[]
       this.flines.push(_line)
       this.selectedLine2 = _line
-
+      //右屏数据展示
+    //  this.getLineData(_line)
       // 地理图画单线图
-      this.getLineData(_line)
+      this.getLine(_line)
       // 网架图画单线图
-      this.dist = _line
-      this.getYZ(this.dist)
+      // this.dist = _line
+      this.getYZ(_line)
             //发送mqtt消息
-      this.msg = "{\"client\":\"left middle\",\"actionType\":\"switch_line\",\"parameters\":{\"fline\":\""+_line+"\",\"dist\":\""+this.dist+"\"}}"
-      this.sendMsg(this.msg)
+      // this.msg = "{\"client\":\"left middle\",\"actionType\":\"switch_line\",\"parameters\":{\"fline\":\""+_line+"\",\"dist\":\""+this.dist+"\"}}"
+      // this.sendMsg(this.msg)
     },
     showLabel(){
 
@@ -337,9 +415,17 @@ export default {
     },
         // 搜索 设备
     search1(){
-      if(this.value2 !=''){
-         this.getPoint_s(this.value1)// 根据名称定位点
-      }
+      // if(this.value1 !=''){
+      //    this.getPoint_s(this.value1)// 根据名称定位点
+      // }
+      this.options1.filter((item, index, arr) => {
+          if(item.name===this.value1){
+            this.onPoint(item.id)
+            this.point_selected = this.options1[index]
+            this.drawPoint()
+          }
+       }
+      )
     },
          // 搜索 线路
     search2(){
@@ -460,8 +546,8 @@ export default {
       document.getElementById('img').style.display = 'block'
       document.getElementById('line_name').style.display = 'block'
       document.getElementById('line_name').innerHTML = _name+"接线图"
-      this.msg = "{\"client\":\"left\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+_id+"\", \"type\":\"detail\",\"dist\":\""+this.dist+"\"}}"
-      this.sendMsg(this.msg)
+      // this.msg = "{\"client\":\"left\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+_id+"\", \"type\":\"detail\",\"dist\":\""+this.dist+"\"}}"
+      // this.sendMsg(this.msg)
     },
     // 隐藏接线图
     hideDetail(){
@@ -473,22 +559,25 @@ export default {
        
       // 如果flines为空,表示
       if(this.flines.length ===0){
-        this.msg = "{\"client\":\"left\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
-        this.sendMsg(this.msg)
+        // this.msg = "{\"client\":\"left\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
+        // this.sendMsg(this.msg)
       }else{
         if(document.getElementById('img').style.display === 'none'){
-          this.dist = '营子区'
+          // this.dist = '营子区'
           this.flines = []
-          this.drawDist('营子区')
-          this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\"营子区\"}}"
-          this.sendMsg(this.msg)
+          this.drawDist(this.dist)
+          this.getYZ(this.dist)
+          // this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\"营子区\"}}"
+          // this.sendMsg(this.msg)
         }else{
-          this.msg = "{\"client\":\"left\",\"actionType\":\"switch_line\",\"parameters\":{\"dist\":\""+this.flines[0]+"\"}}"
-          this.sendMsg(this.msg)
+          // this.msg = "{\"client\":\"left\",\"actionType\":\"switch_line\",\"parameters\":{\"dist\":\""+this.flines[0]+"\"}}"
+          // this.sendMsg(this.msg)
+            this.getYZ(this.flines[0])
+            this.drawLine(this.flines[0])
         }
      
       }
-      this.getYZ(this.dist)
+      
     },
     //获取当前线路的配变数量
     getPbData(_line){
@@ -503,8 +592,8 @@ export default {
         that.pb = response
         that.drawPowerScope()
                    //发送mqtt消息
-      that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"fline\":\""+_line+"\",\"type\":\"供电范围\"}}"
-      that.sendMsg(this.msg)
+      // that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"fline\":\""+_line+"\",\"type\":\"供电范围\"}}"
+      // that.sendMsg(this.msg)
       })
     },
     // 获取当前区域的负载率 或者 户均容量
@@ -528,8 +617,8 @@ export default {
         });
       //发送mqtt消息
       that.heatMap()
-      that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"dist\":\""+_dist+"\",\"type\":\""+_type+"\"}}"
-      that.sendMsg(this.msg)
+      // that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"dist\":\""+_dist+"\",\"type\":\""+_type+"\"}}"
+      // that.sendMsg(this.msg)
       })
     },
     //画热力图
@@ -612,8 +701,8 @@ export default {
         if(this.dist === '承德市'){
            this.showInfo(1)
         }
-      this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
-      this.sendMsg(this.msg)
+      // this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
+      // this.sendMsg(this.msg)
     },
     //缩小
     zoomOut () {
@@ -624,8 +713,8 @@ export default {
       if(this.dist === '承德市'){
           this.showInfo(1)
         }
-        this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"缩小\"}}"
-      this.sendMsg(this.msg)
+      //   this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"缩小\"}}"
+      // this.sendMsg(this.msg)
     },
     //获取承德市地理图数据
     getCd(){
@@ -680,13 +769,13 @@ export default {
        for (let item of this.point_map_bdz) {
             var icon = ''
         if(item.voltage=== 35){
-           icon = new BMap.Icon('/cd/static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+           icon = new BMap.Icon('/static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
         }else if(item.voltage=== 110){
-           icon = new BMap.Icon('/cd/static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+           icon = new BMap.Icon('/static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
         }else if(item.voltage=== 220){
-           icon = new BMap.Icon('/cd/static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+           icon = new BMap.Icon('/static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
         }else if(item.voltage === 500){
-           icon = new BMap.Icon('/cd/static/bdmap/images/cd500.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+           icon = new BMap.Icon('/static/bdmap/images/cd500.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
         }
         var p0 = new BMap.Point(item.lg, item.lat)
         var m0 = new BMap.Marker(p0, { icon: icon ,title:item.name})
@@ -754,7 +843,7 @@ export default {
             this.allMarker.push(polygon)
             li["line"]=polygon
             // this.selectedLine.push(polygon)
-      polygon.addEventListener('click',function(e){
+      polygon.addEventListener('mouseover',function(e){
         var x = e.point.lng
         var y = e.point.lat
         var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
@@ -776,8 +865,8 @@ export default {
       var infoWindow = new BMap.InfoWindow(content,opts)
       this.map.openInfoWindow(infoWindow,point)  // 在地图上加载信息窗口，（窗口的内容，窗口的位置）
        //大屏相同位置显示信息窗口
-      this.msg = "{\"client\":\"middle\", \"actionType\":\"show_InfoWindow\", \"parameters\":{\"content\":\""+content+"\",\"x\":\""+x+"\",\"y\":\""+y+"\"}}"
-      this.sendMsg(this.msg)
+      // this.msg = "{\"client\":\"middle\", \"actionType\":\"show_InfoWindow\", \"parameters\":{\"content\":\""+content+"\",\"x\":\""+x+"\",\"y\":\""+y+"\"}}"
+      // this.sendMsg(this.msg)
     },
     // 获取区县地理图数据
     getDistData(_dist){
@@ -853,13 +942,13 @@ export default {
              var t = ''
             if(item.type === '变电站'){
               if(item.voltage===35){
-                icon = new BMap.Icon('../cd/static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }else if(item.voltage===110){
-                icon = new BMap.Icon('../cd/static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }else if(item.voltage===220){
-                icon = new BMap.Icon('../cd/static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }else if(item.voltage===500){
-                icon = new BMap.Icon('../cd/static/bdmap/images/cd500.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/cd500.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }
               t = item.name.indexOf('变')
               label = new BMap.Label(item.name.substr(0,t), { offset: new BMap.Size(-20, 45) })
@@ -868,16 +957,16 @@ export default {
               label = new BMap.Label(item.name, { offset: new BMap.Size(-20, 45) })
               switch(item.type){
                 case '环网柜':
-                  icon = new BMap.Icon('../cd/static/bdmap/images/hwg.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                  icon = new BMap.Icon('../static/bdmap/images/hwg.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                   break
                 case '开闭站':
-                 icon = new BMap.Icon('../cd/static/bdmap/images/kbz.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                 icon = new BMap.Icon('../static/bdmap/images/kbz.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                   break
                 case '杆塔':
                  icon = ''
                   break
                 default:
-                  icon = new BMap.Icon('../cd/static/bdmap/images/pb.png', new BMap.Size(39, 26), { fillOpacity: 1, anchor: new BMap.Size(20, 13) })
+                  icon = new BMap.Icon('../static/bdmap/images/pb.png', new BMap.Size(39, 26), { fillOpacity: 1, anchor: new BMap.Size(20, 13) })
                   break
                   }
             }
@@ -941,7 +1030,7 @@ export default {
                   this.map.addOverlay(polygon)
                   li["line"]=polygon
                   this.selectedLine.push(polygon)
-        polygon.addEventListener('click',function(e){
+        polygon.addEventListener('mouseover',function(e){
           var x = e.point.lng
           var y = e.point.lat
           var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
@@ -952,8 +1041,8 @@ export default {
           }
           this.showInfo(1)
     },
-  // 获取线路数据 
-    getLineData(_line){
+    // 获取线路坐标和连线
+    getLine(_line){
       var that = this
       post({
             url: 'http://127.0.0.1:8089/web/map/queryPoint',
@@ -969,6 +1058,17 @@ export default {
             that.line_l = response
               that.drawLine(_line)
           })
+        })
+    },
+  // 获取线路数据 
+    getLineData(_line){
+      var that = this
+      post({
+            url: 'http://127.0.0.1:8089/index/getLineInfo',
+            method: 'post',
+            data: {fline:_line}
+          }).then(response  => {
+            console.log(response) 
         })
     },
    //绘制线路
@@ -988,6 +1088,11 @@ export default {
                       this.map.removeOverlay(item)
                   }
               }
+                     if(this.allMarker.length != 0){
+                  for (let item of this.allMarker) {
+                      this.map.removeOverlay(item)
+                  }
+              }
                   if(this.wjj.length != 0){
                   for (let item of this.wjj) {
                       this.map.removeOverlay(item)
@@ -1000,27 +1105,39 @@ export default {
                   var t = ""
                   if(po.type === '变电站'){
                       if(po.voltage=== 35){
-                          icon = new BMap.Icon('/cd/static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          icon = new BMap.Icon('/static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                       }else if(po.voltage===110){
-                          icon = new BMap.Icon('/cd/static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          icon = new BMap.Icon('/static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                       }else if(po.voltage=== 220){
-                          icon = new BMap.Icon('/cd/static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          icon = new BMap.Icon('/static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                       }
                       t = po.name.indexOf('变')
                       label = new BMap.Label(po.name.substr(0,t), { offset: new BMap.Size(-20, 45) })
                   }  else {
                       switch(po.type){
                         case '环网柜':
-                          icon = new BMap.Icon('/cd/static/bdmap/images/hwg.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          icon = new BMap.Icon('/static/bdmap/images/hwg.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                           break
                         case '开闭站':
-                        icon = new BMap.Icon('/cd/static/bdmap/images/kbz.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                        icon = new BMap.Icon('/static/bdmap/images/kbz.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                           break
                         case '杆塔':
                         icon = ''
                           break
+                        case '跌落式熔断器':
+                        icon = new BMap.Icon('/static/bdmap/images/rdq.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          break
+                        case '配电室':
+                        icon = new BMap.Icon('/static/bdmap/images/pd.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          break
+                        case '电缆分接箱':
+                        icon = new BMap.Icon('/static/bdmap/images/df.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          break
+                        case '箱式变电站':
+                        icon = new BMap.Icon('/static/bdmap/images/xb.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          break
                         default:
-                          icon = new BMap.Icon('/cd/static/bdmap/images/pb.png', new BMap.Size(39, 26), { fillOpacity: 1, anchor: new BMap.Size(20, 13) })
+                          icon = new BMap.Icon('/static/bdmap/images/pb.png', new BMap.Size(39, 26), { fillOpacity: 1, anchor: new BMap.Size(20, 13) })
                           break
                           }
                     }
@@ -1086,7 +1203,7 @@ export default {
                       this.map.addOverlay(polygon)
                         li["line"]=polygon
                       this.selectedLine.push(polygon)
-                         polygon.addEventListener('click',function(e){
+                         polygon.addEventListener('mouseover',function(e){
         var x = e.point.lng
         var y = e.point.lat
         var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
@@ -1103,14 +1220,14 @@ export default {
       document.getElementById('bt_web').style.backgroundImage= 'url(' + require('@/components/images/bt_web.png') + ')'
       document.getElementById('map_control').style.display = 'block'
 
-      document.getElementById('map').style.top='14px'
-      document.getElementById('map').style.left='98px'
-      document.getElementById('map').style.width='1374px'
-      document.getElementById('map').style.height='866px'
+      document.getElementById('map').style.top='173px'
+      document.getElementById('map').style.left='107px'
+      document.getElementById('map').style.width='1376px'
+      document.getElementById('map').style.height='864px'
       document.getElementById('map').style.zIndex=2
 
-      document.getElementById('graphContainer').style.top='580px'
-      document.getElementById('graphContainer').style.left='1072px'
+      document.getElementById('graphContainer').style.top='736px'
+      document.getElementById('graphContainer').style.left='1082px'
       document.getElementById('graphContainer').style.width='400px'
       document.getElementById('graphContainer').style.height='300px'
       document.getElementById('graphContainer').style.zIndex=3
@@ -1122,14 +1239,14 @@ export default {
       document.getElementById('line_name').style.display = 'none'
       document.getElementById('bt_web').style.backgroundImage= 'url(' + require('@/components/images/bt_web2.png') + ')'
       document.getElementById('map_control').style.display = 'none'
-      document.getElementById('graphContainer').style.top='14px'
-      document.getElementById('graphContainer').style.left='98px'
-      document.getElementById('graphContainer').style.width='1374px'
-      document.getElementById('graphContainer').style.height='866px'
+      document.getElementById('graphContainer').style.top='173px'
+      document.getElementById('graphContainer').style.left='107px'
+      document.getElementById('graphContainer').style.width='1376px'
+      document.getElementById('graphContainer').style.height='864px'
       document.getElementById('graphContainer').style.zIndex=2
 
-      document.getElementById('map').style.top='580px'
-      document.getElementById('map').style.left='1072px'
+      document.getElementById('map').style.top='736px'
+      document.getElementById('map').style.left='1082px'
       document.getElementById('map').style.width='400px'
       document.getElementById('map').style.height='300px'
       document.getElementById('map').style.zIndex=3
@@ -1165,8 +1282,8 @@ export default {
       if(e ===1){
          this.zd_bg = 'primary'
         this.checkbox1 = []
-         this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"自动\"}}"
-        this.sendMsg(this.msg)
+        //  this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"自动\"}}"
+        // this.sendMsg(this.msg)
       // alert(z)   // 11  13 15
         for (let po of point){
           this.map.removeOverlay(po.marker)
@@ -1222,8 +1339,8 @@ export default {
       }
       // 多选
       if(e === 2){
-        this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"多选\",\"checkbox\":\""+this.checkbox1+"\"}}"
-        this.sendMsg(this.msg)
+        // this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"多选\",\"checkbox\":\""+this.checkbox1+"\"}}"
+        // this.sendMsg(this.msg)
         // 反向选择 ，如果checkbox1不包含哪个，地图就把哪个删掉
         this.zd_bg = ''
         for (let po of point){
@@ -1414,13 +1531,14 @@ export default {
     // 获取地市、区县网架图数据
     getYZ(_dist){
       post({
-        url: 'http://127.0.0.1:8089/web/wj/queryPoint',
+        url: 'http://192.168.0.109:8089/web/wj/queryPoint',
         method: 'post',
         data: { dist:_dist}
       }).then(response => {
         this.point_wj =response
+        console.log(this.point_wj)
       post({
-        url: 'http://127.0.0.1:8089/web/wj/queryLine',
+        url: 'http://192.168.0.109:8089/web/wj/queryLine',
         method: 'post',
         data: {  dist:_dist}
       }).then(response => {
@@ -1449,45 +1567,56 @@ export default {
         document.getElementById('line_name').style.display = 'block'
       }
       for(let item of that.point_wj){
-        if(item.dist === that.dist){
           var labelWidth =item.labelWidth
           var labelHeight = item.labelHeight
           if(item.type === '变电站'){
             switch(item.voltage){
               case 220:
-                that.img='shape=image;image=/cd/static/mx/wss-img/220.png;'
+                that.img='shape=image;image=/static/mx/wss-img/220.png;'
                 break
               case 110:
-                that.img='shape=image;image=/cd/static/mx/wss-img/110.png;'
+                that.img='shape=image;image=/static/mx/wss-img/110.png;'
                 if(that.dist === '承德市'){
-                  labelWidth = 50
-                  labelHeight = 22
+                  labelWidth = 40
+                  labelHeight = 20
                 }else{
                   labelWidth = 150
                   labelHeight = 66.9
                  }
                 break
               case 35:
-                that.img='shape=image;image=/cd/static/mx/wss-img/35b.png;'
+                that.img='shape=image;image=/static/mx/wss-img/35.png;'
                 break
             }
           }
           else {
             switch(item.type){
             case '环网柜':
-              that.img='shape=image;image=/cd/static/mx/wss-img/huanwang.png;'
+              that.img='shape=image;image=/static/mx/wss-img/hwg.png;'
               break
             case '开闭站-公用':
-              that.img='shape=image;image=/cd/static/mx/wss-img/10public.png;'
+              that.img='shape=image;image=/static/mx/wss-img/10public.png;'
               break
             case '开闭站-用户':
-              that.img='shape=image;image=/cd/static/mx/wss-img/10user.png;'
+              that.img='shape=image;image=/static/mx/wss-img/10user.png;'
               break
             case '配变':
-              that.img='shape=image;image=/cd/static/mx/wss-img/peibian.png;'
+              that.img='shape=image;image=/static/mx/wss-img/pb.png;'
+              break
+            case '跌落式熔断器':
+              that.img='shape=image;image=/static/mx/wss-img/rdq.png;'
+              break
+            case '箱式变电站':
+              that.img='shape=image;image=/static/mx/wss-img/xb.png;'
+              break
+            case '电缆分接箱':
+              that.img='shape=image;image=/static/mx/wss-img/df.png;'
+              break
+            case '配电室':
+              that.img='shape=image;image=/static/mx/wss-img/pd.png;'
               break
             default:
-                that.img='shape=image;image=/cd/static/mx/wss-img/ganta.png;'
+                that.img='shape=image;image=/static/mx/wss-img/gt.png;'
               break
             }
           }
@@ -1509,20 +1638,19 @@ export default {
             that.locat='labelPosition=right;align=left'
             break
         }
-        if(item.type === '变电站'){
-          that.locat=''
-        }
+        // if(item.type === '变电站'){
+        //   that.locat='labelPosition=right;align=left'
+        // }
         
         // 画模块  设备  mxGraph.insertVertex(parent，id，value，x，y，width，height，style )
         let p = that.graph.insertVertex(that.parent, item.id, item.name,item.x-0.5*labelWidth,item.y-0.5*labelHeight,labelWidth,labelHeight,this.img+this.locat)
         item["point_s"] =p
-        }
+        
       }
      var p1,p2
      var count =1
       // 画网架图连线
       for(let li of that.line_wj){
-        if(li.dist === that.dist){
           for (let po of that.point_wj){
             if(po.id === li.source) {
               p1 = po
@@ -1566,7 +1694,6 @@ export default {
               }
             }
           }
-        }
       }
     },
     // 点击【承德市】按钮
@@ -1585,8 +1712,8 @@ export default {
       document.getElementById('bt_sbxx').style.backgroundImage= 'url(' + require('@/components/images/sb2.png') + ')'
       document.getElementById('bt_back').style.backgroundImage= 'url(' + require('@/components/images/back2.png') + ')'
       this.getCd()  //画承德市地理图
-      this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
-      this.sendMsg(this.msg)
+      // this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
+      // this.sendMsg(this.msg)
    },
     // 点击【区县】按钮
     changeSelect(){
@@ -1616,23 +1743,23 @@ export default {
       }
       that.getYZ(that.dist)    // 绘制区县的网架图
       that.getDistData(that.dist) // 绘制区县的地理图
-      that.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
-      that.sendMsg(that.msg)
+      // that.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
+      // that.sendMsg(that.msg)
    },
   //发送选中设备的命令
     onPoint(value){
       var that = this
               // mqtt 发送消息
-       that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+value+"\",\"dist\":\""+that.dist+"\"}}"
-       that.sendMsg(that.msg)
+      //  that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+value+"\",\"dist\":\""+that.dist+"\"}}"
+      //  that.sendMsg(that.msg)
     },
     //发送选中线路的命令
     onLine(sp,tp){
         var that = this
               // mqtt 发送消息
-       that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_line\",\"parameters\":{\"source\":\""+sp+"\", \"target\":\""+tp+"\", \"dist\":\""+that.dist+"\"}}"
-                // this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
-       that.sendMsg(that.msg)
+      //  that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_line\",\"parameters\":{\"source\":\""+sp+"\", \"target\":\""+tp+"\", \"dist\":\""+that.dist+"\"}}"
+      //           // this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
+      //  that.sendMsg(that.msg)
     },
     //画承德市内的界限
     onCd0 (url) {
@@ -1695,14 +1822,15 @@ export default {
 }
 </script>
 
-<style>
+ <style >
+
 .body{
   touch-action: none;
 }
 #web-body{
   height: 1081px;
   width: 1921px;
- background:url('/cd/static/bdmap/images/bgmain.png');
+ background:url('/static/bdmap/images/bgmain.png');
  text-decoration-color: transparent;
 }
 #web-header{
@@ -1710,66 +1838,70 @@ export default {
   margin-left: 50px;
 
 }
-
+#web-main{
+  margin-top:20px;
+  margin-left:10px;
+}
 #bt_big{
-  background: url('/cd/static/bdmap/images/big2.png');
+  background: url('/static/bdmap/images/big2.png');
   width: 80px;
   height: 69px;
 }
 #bt_small{
-  background: url('/cd/static/bdmap/images/small2.png');
+  background: url('/static/bdmap/images/small2.png');
   width: 80px;
   height: 69px;
 }
 #bt_cd{
-  background: url('/cd/static/bdmap/images/bt_cd.png');
+  background: url('/static/bdmap/images/bt_cd.png');
   width: 151px;
   height: 71px;
   margin-right: 10px;
 
 }
 #select_qx{
-  background: url('/cd/static/bdmap/images/select_qx.png');
+  background: url('/static/bdmap/images/select_qx.png');
    width: 199px;
   height: 71px;
   font-size: 28px;
   font-weight: 800;
   color:#3D3D3D;
+  font-family: '黑体';
   left:0px;
-    position: absolute;
+  position: absolute;
 
 }
 #bt_qx{
-  background: url('/cd/static/bdmap/images/bt_qx2.png');
+  background: url('/static/bdmap/images/bt_qx2.png');
   width: 151px;
   height: 71px;
   margin-left: 10px;
 }
 #bt_web{
-  background: url('/cd/static/bdmap/images/bt_web2.png');
+  background: url('/static/bdmap/images/bt_web2.png');
   width: 149px;
   height: 69px;
 }
 #bt_map{
-  background: url('/cd/static/bdmap/images/bt_map.png');
+  background: url('/static/bdmap/images/bt_map.png');
   width: 149px;
   height: 69px;
 }
 #graphContainer {
   position: absolute;
-  top: 14px;
-  left: 98px;
+  top: 173px;
+  left: 107px;
   width: 1376px;
-  height: 866px;
+  height: 864px;
   overflow:hidden;
   cursor:default;
   background-color: white;
 }
 #img {
   position: absolute;
-  top: 144px;
-  left: 98px;
-  width: 1376px;
+  top: 298px;
+  left: 106px;
+  width: 1377px;
   height: 740px;
   overflow:hidden;
   cursor:default;
@@ -1778,25 +1910,25 @@ export default {
 }
 #map {
   position: absolute;
-  top: 580px;
-  left: 1072px; 
+  top: 736px;
+  left: 1082px; 
   width: 400px;
   height: 300px;
-  background:url('/cd/static/mx/wss-img/dot.gif');
+  background:url('/static/mx/wss-img/dot.gif');
   overflow:hidden;
   z-index: 1;
 }
-#dg {
+#bt_group {
    position: absolute;
   top: 32px;
-  /* left: 1300px; */
   width: 1450px;
   z-index: 4; 
 }
 #bt_detail {
   position: absolute;
   left: 30px;
-  width: 1000px;
+  top:150px;
+  width: 1200px;
   z-index: 4; 
 }
 
@@ -1807,17 +1939,26 @@ export default {
   top:15px;
     position: absolute;
 }
+#select{
+  position: absolute;
+  left: 30px;
+  margin-top:10px;
+  width: 500px;
+  z-index: 4; 
+}
 #select1{
   background-color: cadetblue;
   font-family: '黑体';
-  color: black;  /*  设置字体颜色 */
+  color: black; 
   font-size: 20px;
+  width: 150px;
+  margin-left: 20px;
   
 }
 #select2{
   background-color: cadetblue;
   font-family: '黑体';
-  color: black;  /*  设置字体颜色 */
+  color: black;  
   width: 150px;
   font-size: 20px;
 }
@@ -1848,7 +1989,7 @@ export default {
 }
 #line_name{
     position: absolute;
-  margin-top:45px;
+  margin-top:220px;
    left: 700px;
   font-size: 50;
   font-weight: 1000;
@@ -1856,33 +1997,52 @@ export default {
   display: none;
 }
 #small_dg{
- background: url('/cd/static/bdmap/images/small_dg.png');
+     position: absolute;
+ background: url('/static/bdmap/images/small_dg.png');
  margin-right: 10px;
+ top:150px;
+left:1300px;
  width: 159px;
  height: 59px;
 }
 #map_control{
- /* background-color:aquamarine; */
   position: absolute;
  width: 300px;
-   margin-top: 100px;
+ top: 280px;
   margin-left: 1180px;
   z-index:100; 
   display: none;
+  background-color: transparent;
 }
 #properties {
-  
   position: absolute;
-  top: 20px;
-  /* padding-right: 100px; */
-  /* left: 1350px; */
-  background:url('/cd/static/mx/wss-img/dot.gif');
+  top: 200px;
+  left: 1522px;
   width: 300px;
   height: 850px;
-  margin-left: 75px;
-  overflow:auto;
-  float: right;
-  /* border: solid 1px black */
+  overflow:hidden;
+}
+.biaoqian{
+  background:cadetblue;
+  height: 50px;
+  color: aliceblue;
+  width: 100%;
+  margin-top:10px;
+}
+.canshu{
+  padding:10px;
+}
+.chart{
+    margin-top:10px;
+    height: 60px;
+}
+.canshu2{
+  padding-top:20px;
 }
 
 </style>
+    <style>/*去除百度地图版权*/
+    .anchorBL{
+        display:none;
+    }
+    </style>
