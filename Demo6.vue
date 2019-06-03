@@ -82,49 +82,43 @@
       <div id="img">
         <img :src="imgurl">
       </div>
-
+  <!-- 配变数据配置 -->
         <div id="properties">
           <div id="properPB"  style="display:none">
-            型号：{{pb_xh}}
-            <br>
-            线损:{{pb_xs}}
-            <br>
-            供电户数:{{pb_gdhs}}
-            <br>
-            <el-button @click="dialogVisible1 =true">饼状图</el-button>
-            <br>
-            <el-button @click="dialogVisible2 =true">曲线图</el-button>
-              <el-dialog title="饼状图数据展示" :visible.sync = "dialogVisible1" width="800px" center>
-                <el-row>
-                  <el-col :span="16">
-                    <div id="mychart1" style="width:580px; ">
-                      <ve-pie :data="chartData"  :tooltip-visible="true" :legend-visible="true" ></ve-pie>
-                    </div>
-                  </el-col>
-                </el-row>
-                <span slot="footer" class="dialog-footer">
-                  <el-button @click="dialogVisible1 = false">取 消</el-button>
-                  <el-button type="primary" @click="dialogVisible1 = false">确 定</el-button>
-                </span>
-              </el-dialog>
-                
-              <el-dialog title="曲线图数据展示" :visible.sync = "dialogVisible2" width="800px" center>
-                <el-row>
-                  <el-col :span="16">
-                    <div id="mychart2" style="width:580px; ">
-                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
-                    </div>
-                  </el-col>
-                </el-row>
-              
-                
-                <span slot="footer" class="dialog-footer">
-                  <el-button @click="dialogVisible2 = false">取 消</el-button>
-                  <el-button type="primary" @click="dialogVisible2 = false">确 定</el-button>
-                </span>
-              </el-dialog>
+             <div class="biaoqian">
+              <div class="canshu"> 配变名称：{{pb.name}} </div>
+            </div>
+             <div class="biaoqian">
+              <div class="canshu">型号：{{pb.xh}} </div>
+            </div>
+           <div class="biaoqian">
+              <div class="canshu">线损：{{pb.xs}} </div>
+            </div>
+              <div class="biaoqian">
+              <div class="canshu">容量：{{pb.rl}} </div>
+            </div>
+              <div class="biaoqian">
+              <div class="canshu">供电户数：{{pb.gdhs}} </div>
+            </div>
+            <div class="biaoqian">
+              <div class="canshu">低压回路数：{{pb.dyhl}} </div>
+            </div>
+              <div class="biaoqian">
+              <div class="canshu">三相电流：{{pb.sxdl}} </div>
+            </div>
+          <div class="chart">
+            <div class="canshu2">   <el-button type="info" style="width:150px">负载率</el-button></div>
           </div>
-          <div id="properXL" style="display:none">
+         <div class="chart">
+          <div class="canshu2">   <el-button type="info"  style="width:150px">线损率</el-button></div>
+         </div>
+              <div class="chart">
+          <div class="canshu2">   <el-button type="info"  style="width:150px">电压偏差</el-button></div>
+         </div>
+         
+       </div>
+       <!-- 线路数据配置 -->
+       <div id="properXL" style="display:none">
             <div class="biaoqian">
               <div class="canshu"> 线路名称：{{xl.feederName}} </div>
             </div>
@@ -155,11 +149,11 @@
             <div class="chart">
                <div class="canshu2"> <el-button type="info"  @click="dialogVisible3 =true" style="width:150px">历史负载率</el-button></div>
             </div>
-              <el-dialog title="饼状图数据展示" :visible.sync = "dialogVisible1" width="800px" center>
+              <el-dialog title="历史负荷" :visible.sync = "dialogVisible1" width="800px" center>
                 <el-row>
                   <el-col :span="16">
-                    <div id="mychart1" style="width:580px; ">
-                      <ve-pie :data="chartData"  :tooltip-visible="true" :legend-visible="true" ></ve-pie>
+                     <div id="mychart1" style="width:580px; ">
+                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
                     </div>
                   </el-col>
                 </el-row>
@@ -169,11 +163,11 @@
                 </span>
               </el-dialog>
                 
-              <el-dialog title="曲线图数据展示" :visible.sync = "dialogVisible2" width="800px" center>
+              <el-dialog title="历史载流量" :visible.sync = "dialogVisible2" width="800px" center>
                 <el-row>
                   <el-col :span="16">
                     <div id="mychart2" style="width:580px; ">
-                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
+                      <ve-line :data="chartData2" :settings="chartSettings"> </ve-line>
                     </div>
                   </el-col>
                 </el-row>
@@ -183,11 +177,11 @@
                 </span>
               </el-dialog>
 
-              <el-dialog title="曲线图数据展示" :visible.sync = "dialogVisible3" width="800px" center>
+              <el-dialog title="历史负载率" :visible.sync = "dialogVisible3" width="800px" center>
                 <el-row>
                   <el-col :span="16">
                     <div id="mychart3" style="width:580px; ">
-                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
+                      <ve-line :data="chartData3" :settings="chartSettings"> </ve-line>
                     </div>
                   </el-col>
                 </el-row>
@@ -215,6 +209,9 @@ export default {
       area: true
     }
     return {
+      pb:{
+        name:'我是配变测试数据',
+      },
       xl:{
         feederName:'我是测试数据', // 线路名称
         dmsTransCount:'23', // 所带配变数
@@ -230,32 +227,21 @@ export default {
       dialogVisible1:false,
       dialogVisible2:false,
        dialogVisible3:false,
-      chartData: {
-        columns: ['状态', '数量'],
-        rows: [
-          { '状态': '设备巡视中', '数量': '10' },
-          { '状态': '设备正常', '数量': '26' },
-          { '状态': '设备故障', '数量': '5' }
-        ]
-      },
       chartData1: {
-        columns: ['时段', '资产状况'],
+        columns: ['key', 'value'],
         rows: [
-          { '时段': '1', '资产状况': '120' },
-          { '时段': '2', '资产状况': '100' },
-          { '时段': '3', '资产状况': '80' },
-          { '时段': '4', '资产状况': '90' },
-          { '时段': '5', '资产状况': '76' },
-          { '时段': '6', '资产状况': '93' },
-          { '时段': '7', '资产状况': '60' },
-          { '时段': '8', '资产状况': '75' },
-          { '时段': '9', '资产状况': '40' }
         ]
       },
-      pb_xh:'S9',
-      pb_xs:'20',
-      pb_gdhs:'300',
-      input1:'',
+      chartData2: {
+        columns: ['key', 'value'],
+        rows: [
+        ]
+      },
+      chartData3: {
+        columns: ['key', 'value'],
+        rows: [
+        ]
+      },
       value1: '',
       value2: '',
       options1:[], // 模糊搜索的选项
@@ -329,14 +315,14 @@ export default {
     this.init()
   },
   created: function() {
-    // this.client = new Paho.MQTT.Client('127.0.0.1', 61623, 'wss_web'), // 第三个参数是clientID可以为空
-    // this.client.connect({
-    //   onSuccess: this.onConnect,
-    //   userName: 'admin',
-    //   password: 'password'
-    // });
-    // this.client.onConnectedLost = this.onConnectedLost;
-    // this.client.onMessageArrived = this.onMessageArrived;
+    this.client = new Paho.MQTT.Client('127.0.0.1', 61623, 'wss_web'), // 第三个参数是clientID可以为空
+    this.client.connect({
+      onSuccess: this.onConnect,
+      userName: 'admin',
+      password: 'password'
+    });
+    this.client.onConnectedLost = this.onConnectedLost;
+    this.client.onMessageArrived = this.onMessageArrived;
   },
   watch: { // 监视
     value: {
@@ -357,37 +343,37 @@ export default {
   },
   methods: {
     // mqtt 相关
-    // onConnectedLost : function(responseObject){  
-    //   console.log("onConnectionLost:"+responseObject.errorMessage);
-    // },
-    // onMessageArrived : function (message) {
-    //   console.log("onMessageArrived:"+message.payloadString);
-    // },
-    // onConnect:function onConnect() {
-    //   // Once a connection has been made, make a subscription and send a message.
-    //   console.log("onConnect");
-    //   this.client.subscribe(this.topic);
-    //   // message = new Paho.MQTT.Message("Hello");
-    //   // message.destinationName = "World";
-    //   // client.send(message);
-    // },
-    // // mqtt 消息发送
-    // sendMsg(s){
-    //     //  s = this.stest
-    //   // 方法1
-    //     // var message = new Paho.MQTT.Message("Hello")
-    //     // message.destinationName = this.topic
-    //     // this.client.send(message)
-    //   // 方法2
-    //     this.client.send(this.topic,s,0)
-    // },
+    onConnectedLost : function(responseObject){  
+      console.log("onConnectionLost:"+responseObject.errorMessage);
+    },
+    onMessageArrived : function (message) {
+      console.log("onMessageArrived:"+message.payloadString);
+    },
+    onConnect:function onConnect() {
+      // Once a connection has been made, make a subscription and send a message.
+      console.log("onConnect");
+      this.client.subscribe(this.topic);
+      // message = new Paho.MQTT.Message("Hello");
+      // message.destinationName = "World";
+      // client.send(message);
+    },
+    // mqtt 消息发送
+    sendMsg(s){
+        //  s = this.stest
+      // 方法1
+        // var message = new Paho.MQTT.Message("Hello")
+        // message.destinationName = this.topic
+        // this.client.send(message)
+      // 方法2
+        this.client.send(this.topic,s,0)
+    },
     // 选中线路后的相关操作
     sendLine(_line){
       this.flines=[]
       this.flines.push(_line)
       this.selectedLine2 = _line
       //右屏数据展示
-    //  this.getLineData(_line)
+     this.getLineData(_line)
       // 地理图画单线图
       this.getLine(_line)
       // 网架图画单线图
@@ -399,19 +385,6 @@ export default {
     },
     showLabel(){
 
-    },
-    // 搜索
-    search(){
-      var reg = /[0-9]/;
-      var result =reg.test(this.input1)
-      // 判断输入的是否有数字，如果有为单线图，否则为变电站
-      if(result){
-         this.sendLine(this.input1)
-      }else{
-        //定位承德市的该变电站
-        // this.click()
-        this.getPoint_s(this.input1)// 根据名称定位点
-      }
     },
         // 搜索 设备
     search1(){
@@ -441,7 +414,6 @@ export default {
         this.loading = true
         setTimeout(() => {
           this.loading = false
-          // 根据 input1的内容 搜索设备
           this.getDevice(query)
         })
         
@@ -456,7 +428,6 @@ export default {
         method: 'post',
         data: {name:value}
       }).then(response  => {
-       console.log(response)
        this.options1 = response
       })
     },
@@ -466,7 +437,6 @@ export default {
         this.loading = true
         setTimeout(() => {
           this.loading = false
-          // 根据 input1的内容 搜索设备
           this.getLine(query)
         })
         
@@ -476,13 +446,14 @@ export default {
       }
     },
      getLine(value){
+       console.log("线路搜索"+value)
       post({
         url: 'http://127.0.0.1:8089/web/map/queryFline',
         method: 'post',
         data: {fline:value}
       }).then(response  => {
-       console.log(response)
        this.options2 = response
+       console.log("线路搜索"+this.options2)
       })
     },
     //通过name 搜索变电站，并定位
@@ -546,8 +517,8 @@ export default {
       document.getElementById('img').style.display = 'block'
       document.getElementById('line_name').style.display = 'block'
       document.getElementById('line_name').innerHTML = _name+"接线图"
-      // this.msg = "{\"client\":\"left\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+_id+"\", \"type\":\"detail\",\"dist\":\""+this.dist+"\"}}"
-      // this.sendMsg(this.msg)
+      this.msg = "{\"client\":\"left\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+_id+"\", \"type\":\"detail\",\"dist\":\""+this.dist+"\"}}"
+      this.sendMsg(this.msg)
     },
     // 隐藏接线图
     hideDetail(){
@@ -559,19 +530,19 @@ export default {
        
       // 如果flines为空,表示
       if(this.flines.length ===0){
-        // this.msg = "{\"client\":\"left\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
-        // this.sendMsg(this.msg)
+        this.msg = "{\"client\":\"left\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
+        this.sendMsg(this.msg)
       }else{
         if(document.getElementById('img').style.display === 'none'){
           // this.dist = '营子区'
           this.flines = []
           this.drawDist(this.dist)
           this.getYZ(this.dist)
-          // this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\"营子区\"}}"
-          // this.sendMsg(this.msg)
+          this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\"营子区\"}}"
+          this.sendMsg(this.msg)
         }else{
-          // this.msg = "{\"client\":\"left\",\"actionType\":\"switch_line\",\"parameters\":{\"dist\":\""+this.flines[0]+"\"}}"
-          // this.sendMsg(this.msg)
+          this.msg = "{\"client\":\"left\",\"actionType\":\"switch_line\",\"parameters\":{\"dist\":\""+this.flines[0]+"\"}}"
+          this.sendMsg(this.msg)
             this.getYZ(this.flines[0])
             this.drawLine(this.flines[0])
         }
@@ -592,8 +563,8 @@ export default {
         that.pb = response
         that.drawPowerScope()
                    //发送mqtt消息
-      // that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"fline\":\""+_line+"\",\"type\":\"供电范围\"}}"
-      // that.sendMsg(this.msg)
+      that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"fline\":\""+_line+"\",\"type\":\"供电范围\"}}"
+      that.sendMsg(this.msg)
       })
     },
     // 获取当前区域的负载率 或者 户均容量
@@ -617,8 +588,8 @@ export default {
         });
       //发送mqtt消息
       that.heatMap()
-      // that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"dist\":\""+_dist+"\",\"type\":\""+_type+"\"}}"
-      // that.sendMsg(this.msg)
+      that.msg = "{\"client\":\"middle\",\"actionType\":\"switch_data\",\"parameters\":{\"dist\":\""+_dist+"\",\"type\":\""+_type+"\"}}"
+      that.sendMsg(this.msg)
       })
     },
     //画热力图
@@ -701,8 +672,8 @@ export default {
         if(this.dist === '承德市'){
            this.showInfo(1)
         }
-      // this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
-      // this.sendMsg(this.msg)
+      this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
+      this.sendMsg(this.msg)
     },
     //缩小
     zoomOut () {
@@ -713,8 +684,8 @@ export default {
       if(this.dist === '承德市'){
           this.showInfo(1)
         }
-      //   this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"缩小\"}}"
-      // this.sendMsg(this.msg)
+        this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"缩小\"}}"
+      this.sendMsg(this.msg)
     },
     //获取承德市地理图数据
     getCd(){
@@ -865,8 +836,8 @@ export default {
       var infoWindow = new BMap.InfoWindow(content,opts)
       this.map.openInfoWindow(infoWindow,point)  // 在地图上加载信息窗口，（窗口的内容，窗口的位置）
        //大屏相同位置显示信息窗口
-      // this.msg = "{\"client\":\"middle\", \"actionType\":\"show_InfoWindow\", \"parameters\":{\"content\":\""+content+"\",\"x\":\""+x+"\",\"y\":\""+y+"\"}}"
-      // this.sendMsg(this.msg)
+      this.msg = "{\"client\":\"middle\", \"actionType\":\"show_InfoWindow\", \"parameters\":{\"content\":\""+content+"\",\"x\":\""+x+"\",\"y\":\""+y+"\"}}"
+      this.sendMsg(this.msg)
     },
     // 获取区县地理图数据
     getDistData(_dist){
@@ -1064,11 +1035,14 @@ export default {
     getLineData(_line){
       var that = this
       post({
-            url: 'http://127.0.0.1:8089/index/getLineInfo',
+            url: 'http://192.168.0.109:8089/index/getLineInfo',
             method: 'post',
             data: {fline:_line}
           }).then(response  => {
-            console.log(response) 
+            that.xl =response
+            this.chartData1.rows = that.xl.activePowerHis 
+            this.chartData2.rows = that.xl.ratedCurrentHis
+            this.chartData3.rows = that.xl.currentLoadingHis
         })
     },
    //绘制线路
@@ -1282,8 +1256,8 @@ export default {
       if(e ===1){
          this.zd_bg = 'primary'
         this.checkbox1 = []
-        //  this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"自动\"}}"
-        // this.sendMsg(this.msg)
+         this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"自动\"}}"
+        this.sendMsg(this.msg)
       // alert(z)   // 11  13 15
         for (let po of point){
           this.map.removeOverlay(po.marker)
@@ -1339,8 +1313,8 @@ export default {
       }
       // 多选
       if(e === 2){
-        // this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"多选\",\"checkbox\":\""+this.checkbox1+"\"}}"
-        // this.sendMsg(this.msg)
+        this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"多选\",\"checkbox\":\""+this.checkbox1+"\"}}"
+        this.sendMsg(this.msg)
         // 反向选择 ，如果checkbox1不包含哪个，地图就把哪个删掉
         this.zd_bg = ''
         for (let po of point){
@@ -1440,12 +1414,7 @@ export default {
       if (!mxClient.isBrowserSupported()) {
         mxUtils.error('Browser is not supported!', 200, false)
       } else {
-        this.chartData.rows =  [
-          { '状态': '设备巡视中', '数量': '10' },
-          { '状态': '设备正常', '数量': '26' },
-          { '状态': '设备故障', '数量': '5' },
-           { '状态': '我是测试的', '数量': '5' }
-        ]
+   
       // 画地图
         let map = new BMap.Map('map')
         this.map = map
@@ -1536,7 +1505,6 @@ export default {
         data: { dist:_dist}
       }).then(response => {
         this.point_wj =response
-        console.log(this.point_wj)
       post({
         url: 'http://192.168.0.109:8089/web/wj/queryLine',
         method: 'post',
@@ -1712,8 +1680,8 @@ export default {
       document.getElementById('bt_sbxx').style.backgroundImage= 'url(' + require('@/components/images/sb2.png') + ')'
       document.getElementById('bt_back').style.backgroundImage= 'url(' + require('@/components/images/back2.png') + ')'
       this.getCd()  //画承德市地理图
-      // this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
-      // this.sendMsg(this.msg)
+      this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
+      this.sendMsg(this.msg)
    },
     // 点击【区县】按钮
     changeSelect(){
@@ -1743,23 +1711,23 @@ export default {
       }
       that.getYZ(that.dist)    // 绘制区县的网架图
       that.getDistData(that.dist) // 绘制区县的地理图
-      // that.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
-      // that.sendMsg(that.msg)
+      that.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
+      that.sendMsg(that.msg)
    },
   //发送选中设备的命令
     onPoint(value){
       var that = this
               // mqtt 发送消息
-      //  that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+value+"\",\"dist\":\""+that.dist+"\"}}"
-      //  that.sendMsg(that.msg)
+       that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_point\",\"parameters\":{\"pointId\":\""+value+"\",\"dist\":\""+that.dist+"\"}}"
+       that.sendMsg(that.msg)
     },
     //发送选中线路的命令
     onLine(sp,tp){
         var that = this
               // mqtt 发送消息
-      //  that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_line\",\"parameters\":{\"source\":\""+sp+"\", \"target\":\""+tp+"\", \"dist\":\""+that.dist+"\"}}"
-      //           // this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
-      //  that.sendMsg(that.msg)
+       that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_line\",\"parameters\":{\"source\":\""+sp+"\", \"target\":\""+tp+"\", \"dist\":\""+that.dist+"\"}}"
+                // this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
+       that.sendMsg(that.msg)
     },
     //画承德市内的界限
     onCd0 (url) {
@@ -1772,7 +1740,6 @@ export default {
         var ply = new BMap.Polygon(rsBoundaries, {strokeWeight: 2, strokeOpacity: 0.5, strokeColor: '#7B7B7B', fillOpacity: 0.1})
         this.map.addOverlay(ply)
       }).catch(error => {
-        console.log(error)
       })
     },
     //承德市以外区域，黑色
@@ -1791,7 +1758,6 @@ export default {
         var ply = new BMap.Polygon(dd, {strokeWeight: 0.01, strokeOpacity: 0.01, fillColor: '#000000', fillOpacity: 0.8})
         this.map.addOverlay(ply)
       }).catch(error => {
-        console.log(error)
       })
     },
     //选中区县的边界
@@ -1830,7 +1796,7 @@ export default {
 #web-body{
   height: 1081px;
   width: 1921px;
- background:url('/static/bdmap/images/bgmain.png');
+ background:url('./images/bgmain.png');
  text-decoration-color: transparent;
 }
 #web-header{
@@ -1843,24 +1809,24 @@ export default {
   margin-left:10px;
 }
 #bt_big{
-  background: url('/static/bdmap/images/big2.png');
+  background: url('./images/big2.png');
   width: 80px;
   height: 69px;
 }
 #bt_small{
-  background: url('/static/bdmap/images/small2.png');
+  background: url('./images/small2.png');
   width: 80px;
   height: 69px;
 }
 #bt_cd{
-  background: url('/static/bdmap/images/bt_cd.png');
+  background: url('./images/bt_cd.png');
   width: 151px;
   height: 71px;
   margin-right: 10px;
 
 }
 #select_qx{
-  background: url('/static/bdmap/images/select_qx.png');
+  background: url('./images/select_qx.png');
    width: 199px;
   height: 71px;
   font-size: 28px;
@@ -1872,18 +1838,18 @@ export default {
 
 }
 #bt_qx{
-  background: url('/static/bdmap/images/bt_qx2.png');
+  background: url('./images/bt_qx2.png');
   width: 151px;
   height: 71px;
   margin-left: 10px;
 }
 #bt_web{
-  background: url('/static/bdmap/images/bt_web2.png');
+  background: url('./images/bt_web2.png');
   width: 149px;
   height: 69px;
 }
 #bt_map{
-  background: url('/static/bdmap/images/bt_map.png');
+  background: url('./images/bt_map.png');
   width: 149px;
   height: 69px;
 }
@@ -1930,14 +1896,6 @@ export default {
   top:150px;
   width: 1200px;
   z-index: 4; 
-}
-
-#input1{
-  background:url('./images/bt_ss.png');
-  width: 188px;
-  height: 49px;
-  top:15px;
-    position: absolute;
 }
 #select{
   position: absolute;
