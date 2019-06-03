@@ -380,8 +380,8 @@ export default {
       // this.dist = _line
       this.getYZ(_line)
             //发送mqtt消息
-      // this.msg = "{\"client\":\"left middle\",\"actionType\":\"switch_line\",\"parameters\":{\"fline\":\""+_line+"\",\"dist\":\""+this.dist+"\"}}"
-      // this.sendMsg(this.msg)
+      this.msg = "{\"client\":\"left middle\",\"actionType\":\"switch_line\",\"parameters\":{\"fline\":\""+_line+"\",\"dist\":\""+this.dist+"\"}}"
+      this.sendMsg(this.msg)
     },
     showLabel(){
 
@@ -765,8 +765,9 @@ export default {
           let id = item.id
           that.onPoint(id)
                 // 不同的设备类型，展示的content 可以不同，按照item.type来区分
-          var content = "设备名称："+item.name+"<br>"+" 横坐标："+item.lg+"<br>" +"纵坐标："+item.lat 
-          that.openInfo(item.lg, item.lat,content)  //显示选中点的相关信息
+          // var content = "设备名称："+item.name+"<br>"+" 横坐标："+item.lg+"<br>" +"纵坐标："+item.lat 
+          // that.openInfo(item.lg, item.lat,content)  //显示选中点的相关信息
+          document.getElementById('properPB').style.display = 'block'
          
         })
         }
@@ -814,12 +815,12 @@ export default {
             this.allMarker.push(polygon)
             li["line"]=polygon
             // this.selectedLine.push(polygon)
-      polygon.addEventListener('mouseover',function(e){
-        var x = e.point.lng
-        var y = e.point.lat
-        var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
-        that.openInfo(x,y,content)
-      })
+      // polygon.addEventListener('mouseover',function(e){
+      //   var x = e.point.lng
+      //   var y = e.point.lat
+      //   var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
+      //   that.openInfo(x,y,content)
+      // })
       }
       this.map.centerAndZoom(new BMap.Point(117.972845,40.955677),11)
       this.showInfo(1)
@@ -954,8 +955,8 @@ export default {
                   let id = item.id
                   that.onPoint(id)
                   // 不同的设备类型，展示的content 可以不同，按照item.type来区分
-                  var content = "设备名称："+item.name+"<br>"+" 横坐标："+item.lg+"<br>" +"纵坐标："+item.lat 
-                  that.openInfo(item.lg, item.lat,content)  //显示选中点的相关信息
+                  // var content = "设备名称："+item.name+"<br>"+" 横坐标："+item.lg+"<br>" +"纵坐标："+item.lat 
+                  // that.openInfo(item.lg, item.lat,content)  //显示选中点的相关信息
               })
             }
           
@@ -1001,12 +1002,12 @@ export default {
                   this.map.addOverlay(polygon)
                   li["line"]=polygon
                   this.selectedLine.push(polygon)
-        polygon.addEventListener('mouseover',function(e){
-          var x = e.point.lng
-          var y = e.point.lat
-          var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
-          that.openInfo(x,y,content)
-        })
+        // polygon.addEventListener('mouseover',function(e){
+        //   var x = e.point.lng
+        //   var y = e.point.lat
+        //   var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
+        //   that.openInfo(x,y,content)
+        // })
               
 
           }
@@ -1035,7 +1036,7 @@ export default {
     getLineData(_line){
       var that = this
       post({
-            url: 'http://192.168.0.109:8089/index/getLineInfo',
+            url: 'http://127.0.0.1:8089/index/getLineInfo',
             method: 'post',
             data: {fline:_line}
           }).then(response  => {
@@ -1134,8 +1135,8 @@ export default {
                   let id = po.id
                   that.onPoint(id)
                   // 不同的设备类型，展示的content 可以不同，按照item.type来区分
-                  var content = "设备名称："+po.name+"<br>"+" 横坐标："+po.lg+"<br>" +"纵坐标："+po.lat 
-                  that.openInfo(po.lg, po.lat,content)  //显示选中点的相关信息
+                  // var content = "设备名称："+po.name+"<br>"+" 横坐标："+po.lg+"<br>" +"纵坐标："+po.lat 
+                  // that.openInfo(po.lg, po.lat,content)  //显示选中点的相关信息
                     // 如果该点type为配变，添加供电区域
                   if(po.type==='配变'){
                       // 画户表连线
@@ -1177,12 +1178,12 @@ export default {
                       this.map.addOverlay(polygon)
                         li["line"]=polygon
                       this.selectedLine.push(polygon)
-                         polygon.addEventListener('mouseover',function(e){
-        var x = e.point.lng
-        var y = e.point.lat
-        var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
-        that.openInfo(x,y,content)
-      })
+      //                    polygon.addEventListener('mouseover',function(e){
+      //   var x = e.point.lng
+      //   var y = e.point.lat
+      //   var content="线路名称："+li.name+"<br>"+" 线路id："+li.id+"<br>" +"线路类型："+li.type      
+      //   that.openInfo(x,y,content)
+      // })
 
               }
               this.map.centerAndZoom(p1,16); // 放大居中
@@ -1500,13 +1501,13 @@ export default {
     // 获取地市、区县网架图数据
     getYZ(_dist){
       post({
-        url: 'http://192.168.0.109:8089/web/wj/queryPoint',
+        url: 'http://127.0.0.1:8089/web/wj/queryPoint',
         method: 'post',
         data: { dist:_dist}
       }).then(response => {
         this.point_wj =response
       post({
-        url: 'http://192.168.0.109:8089/web/wj/queryLine',
+        url: 'http://127.0.0.1:8089/web/wj/queryLine',
         method: 'post',
         data: {  dist:_dist}
       }).then(response => {
@@ -1569,7 +1570,11 @@ export default {
               that.img='shape=image;image=/static/mx/wss-img/10user.png;'
               break
             case '配变':
-              that.img='shape=image;image=/static/mx/wss-img/pb.png;'
+             if(item.direction === null){
+               that.img='shape=image;image=/static/mx/wss-img/pb.png;'
+             }else{
+             that.img='shape=image;image=/static/mx/wss-img/pb_'+item.direction+'.png;'
+             }
               break
             case '跌落式熔断器':
               that.img='shape=image;image=/static/mx/wss-img/rdq.png;'
