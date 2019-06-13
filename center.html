@@ -15,8 +15,8 @@
     <script type="text/javascript" src="http://127.0.0.1/cd2/static/bdmap/map_load.js"></script>
     <script src="./js/heatmap.min.js"></script>
 
-    <!--<script type="text/javascript" src="http://api.map.baidu.com/getscript?v=3.0&ak=Dn7WS2XQ8OuAN6oIP9dHieHOOsqKIjOt"></script>-->
-    <!--<script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>-->
+    <script type="text/javascript" src="http://api.map.baidu.com/getscript?v=3.0&ak=Dn7WS2XQ8OuAN6oIP9dHieHOOsqKIjOt"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>
 
     <style>
         #map_demo {
@@ -26,19 +26,32 @@
             width: 100%;
             height: 100%;
         }
-        .wss {
+        #bt{
             position: absolute;
             left: 20px;
-            right: 20px;
             top: 20px;
+            width: 200px;
+            height: 30px;
+        }
+        #wss {
+            position: absolute;
+            left: 20px;
+            top: 100px;
+            font-size: 26px;
         }
 #tabs{
     background: cadetblue;
     width: 300px;
-    height: 200px;
+    height: 800px;
     font-size: 26px;
     display: none;
 /*color:white;*/
+}
+.label{
+    height: 30px;
+}
+span{
+    /*color: crimson;*/
 }
     </style>
     <style>/*去除百度地图版权*/
@@ -51,8 +64,8 @@
 
 <div id="app">
     <div id="map_demo" ref="allmap"></div>
-    <div class='wss'>
-        <!--<button  style="float:left;" @click="drawDist('营子区')">营子区</button>-->
+    <div id="bt">
+        <button  style="float:left;" @click="drawDist('营子区')">营子区</button>
         <!--<button  style="float:left;" @click="drawDist('双桥区')">双桥区</button>-->
         <!--<button  style="float:left;" @click="heatMap('负载率')">负载率热力图</button>-->
         <!--<button  style="float:left;" @click="drawScope('my513')">my513</button>-->
@@ -60,31 +73,138 @@
         <button  style="float:left;" @click="drawLine('my513')">my513</button>
         <!--&lt;!&ndash;<button  style="float:left;" @click="drawLine('yd511')">yd511</button>&ndash;&gt;-->
         <!--<button  style="float:left;" @click=" drawCD()">承德市</button>-->
-        <!--<button  style="float:left;" @click=" drawPoint(110674000000008)">设备点1</button>-->
-        <!--<button  style="float:left;" @click=" drawPoint(110681500000007)">设备点2</button>-->
+        <button  style="float:left;" @click=" drawPoint(110674000000008)">设备点1</button>
+        <button  style="float:left;" @click=" drawPoint(110681500000007)">设备点2</button>
         <!--<button  style="float:left;" @click="zoomIn()">放大</button>-->
         <!--<button  style="float:left;" @click="showInfo(1)">自动</button>-->
         <!--<button  style="float:left;" @click="addCheckbox('110')">110</button>-->
         <!--<button  style="float:left;" @click="addCheckbox('220')">220</button>-->
-		<!--<button  style="float:left;" @click="test()">画线</button>-->
+        <!--<button  style="float:left;" @click="test()">画线</button>-->
         <!--<el-button type="info">信息按钮</el-button>-->
+    </div>
+    <!--1.设置 wss 显示的位置，通过mqtt传递参数  lg,lat-->
+    <!--2.设置 wss 显示的内容，根据设备类型 ，通过mqtt传递参数 type-->
 
-        <el-tabs v-model="activeName" type="card" @tab-click="handleClick" id="tabs">
+    <div id='wss'>
+        <el-tabs v-model="activeName" type="card" id="tabs">
             <el-tab-pane label="基础数据" name="first" >
-                线路名称：{{xl.feederName}}<br>
-                所带配变数: {{xl.dmsSectionCount}}<br>
-                分支数: {{xl.dmsSectionCount}}<br>
-                线路长度: {{xl.lineLength}}
-
+                <div v-if="type==='变电站'">
+                    <span>资产单位 :{{bdz.asset_units}} </span><br>
+                    <span>电站名称 :{{bdz.name_power_station}} </span><br>
+                    <span>纬度:{{bdz.latitude}} </span><br>
+                    <span>经度:{{bdz.longitude}} </span><br>
+                    <span>设备编码:{{bdz.equipment_coding}} </span><br>
+                    <span>运维单位 :{{bdz.operations_maintenance_units}} </span><br>
+                    <span>电压等级 :{{bdz.voltage_level}} </span><br>
+                    <span>站址 :{{bdz.site}} </span><br>
+                    <span>投运日期 :{{bdz.date_commissioning}} </span><br>
+                    <span>设备主人 :{{bdz.equipment_owner}} </span><br>
+                    <span>所属地市 :{{bdz.subordinate_municipalities}} </span><br>
+                </div>
+                <div v-else-if="type==='电缆分接箱'">
+                    电缆分接箱名称：{{xl.feederName}}<br>
+                    所带配变数: {{xl.dmsSectionCount}}<br>
+                    分支数: {{xl.dmsSectionCount}}<br>
+                </div>
+                <div v-else-if="type==='开闭站'">
+                    开闭站名称：{{xl.feederName}}<br>
+                    所带配变数: {{xl.dmsSectionCount}}<br>
+                    分支数: {{xl.dmsSectionCount}}<br>
+                </div>
+                <div v-else-if="type==='线路'">
+                    线路名称：{{xl.feederName}}<br>
+                    分支数: {{xl.dmsSectionCount}}<br>
+                </div>
             </el-tab-pane>
             <el-tab-pane label="运行数据" name="second">
-                容量: {{xl.ratedCurrent}}
-                <br>
-                实时负荷: {{xl.activePower}}
-                <br>
-                实时负载率: {{xl.currentLoading}}
+                <div v-if="type==='变电站'">
+                    有功发电
+                    <br>
+                    无功发电
+                    <br>
+                    有功负荷
+                    <br>
+                    无功负荷
+                    <br>
+                    有功损耗
+                    <br>
+                    无功损耗
+                    <br>
+                    有功厂用电
+                    <br>
+                    无功厂用电
+                    <br>
+                    电容器无功
+                    <br>
+                    电抗器无功
+                    <br>
+                    正时段备用
+                    <br>
+                    负时段备用
+                    <br>
+                    低压电抗投入容量
+                    <br>
+                    高压电抗投入容量
+                    <br>
+                    低压电容投入容量
+                    <br>
+                    厂站最大可调出力
+                    <br>
+                    厂站最小可调出力
+                    <br>
+                    额定容量
+                </div>
+                <!--<div v-else-if="type==='熔断器'">-->
+
+                <!--</div>-->
+                <div v-else-if="type==='开闭站'">
+                    开闭站名称：{{xl.feederName}}<br>
+                    容量: {{xl.ratedCurrent}}
+                    <br>
+                    实时负荷: {{xl.activePower}}
+                    <br>
+                    实时负载率: {{xl.currentLoading}}
+                </div>
+                <div v-else-if="type==='线路'">
+                    线路名称：{{xl.feederName}}<br>
+                    容量: {{xl.ratedCurrent}}
+                    <br>
+                    实时负荷: {{xl.activePower}}
+                    <br>
+                    实时负载率: {{xl.currentLoading}}
+                </div>
             </el-tab-pane>
-            <el-tab-pane label="其他数据" name="third">其他数据</el-tab-pane>
+            <el-tab-pane label="其他数据" name="third">
+                <div v-if="type==='变电站'">
+                    资产性质
+                    <br>
+                    是否智能变电站 
+                    <br>
+                    电站重要级别 
+                    <br>
+                    建筑面积(m*m)
+                    <br>
+                    地区特征 
+                    <br>
+                    维护班组 
+                    <br>
+                    电站类型
+                    <br>
+                    是否枢纽站
+                    <br>
+                    是否代维 
+                    <br>
+                    电站简称
+                    <br>
+                    发布状态 
+                    <br>
+                    登记时间 
+                    <br>
+                    退役日期 
+                    <br>
+                    供电区域 
+                </div>
+            </el-tab-pane>
         </el-tabs>
 
 
@@ -97,6 +217,51 @@
         el: '#app',
         data:{
             msg:'nihao',
+            bdz:{
+                asset_units:4,
+                name_power_station:null,
+                latitude:null,
+                longitude:null,
+                equipment_coding:null,
+                operations_maintenance_units:null,
+                voltage_level:null,
+                site:null,
+                date_commissioning:null,
+                equipment_owner:null,
+                subordinate_municipalities:null,
+                active_power_generation:null,
+                reactive_power_generation:null,
+                active_load:null,
+                reactive_load:null,
+                active_power_loss:null,
+                reactive_power_loss:null,
+                active_auxiliary_power_supply:null,
+                reactive_power_supply:null,
+                capacitor_reactive_power:null,
+                reactor_reactive_power:null,
+                timing_standby:null,
+                negative_period_reserve:null,
+                low_vol_reactance_capacity:null,
+                high_vol_reactance_capacity:null,
+                low_voltage_capacitor:null,
+                maximum_adjustable_output:null,
+                minimum_adjustable_output:null,
+                rated_capacity:null,
+                nature_of_assets:null,
+                is_smart_substation:null,
+                power_plant_important_level:null,
+                building_area:null,
+                regional_characteristics:null,
+                maintenance_team:null,
+                types_of_power_plants:null,
+                is_hub_station:null,
+                is_daiwei:null,
+                abbreviation_power_station:null,
+                release_status:null,
+                registration_time:null,
+                retirement_date:null,
+                power_supply_area:null
+            },
             xl:{
                 feederName:'我是测试数据', // 线路名称
                 dmsTransCount:'23', // 所带配变数
@@ -109,7 +274,8 @@
                 activePowerHis: [], //历史负荷
                 ratedCurrentHis: [] // 载流量
             },
-            activeName: 'second',
+            activeName: 'first',
+            type:'开闭站',
             map: null,
             border:[],
             border_marker:[],
@@ -156,7 +322,9 @@
 
                 this.initMap()
             },
-            handleClick(){},
+            setTabsLocate(x,y){
+                document.getElementById('wss').style.left = x
+            },
             setLocation( x,y,z) {
                 this.map.centerAndZoom(new BMap.Point(x,y), z);
             },
@@ -194,7 +362,6 @@
                     dataType:"json",
                     async:false,
                     success: function(data) {//请求成功完成后要执行的方法
-                        console.log(data)
                         for(let element of data){
                             that.heatPoints.push({
                                 "lng":element.lg,
@@ -202,7 +369,6 @@
                                 "count":300  // element.fzl   element.hjrl
                             })
                         }
-                        console.log(that.heatPoints)
 
                     }
                 })
@@ -331,24 +497,24 @@
                 for (let item of this.point_bdz) {
                     var icon = ''
                     if (item.voltage === 35) {
-                        icon = new BMap.Icon('./images/cd35.png', new BMap.Size(99, 99), {
+                        icon = new BMap.Icon('./images/cd35.png', new BMap.Size(50, 50), {
                             fillOpacity: 1,
-                            anchor: new BMap.Size(50, 50)
+                            anchor: new BMap.Size(25, 25)
                         })
                     } else if (item.voltage === 110) {
-                        icon = new BMap.Icon('./images/cd110.png', new BMap.Size(99, 99), {
+                        icon = new BMap.Icon('./images/cd110.png', new BMap.Size(50, 50), {
                             fillOpacity: 1,
-                            anchor: new BMap.Size(50, 50)
+                            anchor: new BMap.Size(25, 25)
                         })
                     } else if (item.voltage === 220) {
-                        icon = new BMap.Icon('./images/cd220.png', new BMap.Size(99, 99), {
+                        icon = new BMap.Icon('./images/cd220.png', new BMap.Size(50, 50), {
                             fillOpacity: 1,
-                            anchor: new BMap.Size(50, 50)
+                            anchor: new BMap.Size(25, 25)
                         })
                     } else if (item.voltage === 500) {
-                        icon = new BMap.Icon('./images/cd500.png', new BMap.Size(99, 99), {
+                        icon = new BMap.Icon('./images/cd500.png', new BMap.Size(50, 50), {
                             fillOpacity: 1,
-                            anchor: new BMap.Size(50, 50)
+                            anchor: new BMap.Size(25, 25)
                         })
                     }
                     // var n0 = new BMap.Icon('../cd/static/bdmap/images/n0.png', new BMap.Size(33, 34), { fillOpacity: 1, anchor: new BMap.Size(16, 17) })
@@ -600,7 +766,7 @@
                     data: '{"types":["变电站","开闭站","环网柜"], "dist":"'+ _dist+'"}',  // 通过 id 筛选连线
                     contentType:"application/json",
                     dataType:"json",
-                    async:false,
+                    async:true,
                     success: function(data) {//请求成功完成后要执行的方法
 //                        var result = JSON.stringify(data); //json对象转成字符串
                         that.line_d = data;
@@ -610,16 +776,14 @@
             },
             getLineData(value){
                 var that =this
-                document.getElementById('tabs').style.display ='block'
                 $.ajax({
                     url:"http://127.0.0.1:8089/index/getLineInfo",
                     type: "POST",
                     data: '{"fline":"'+value+'"}',
                     contentType:"application/json",
                     dataType:"json",
-                    async:false,
+                    async:true,
                     success: function (response) {
-                        console.log(response)
                         that.xl =response
 
                     }
@@ -793,6 +957,9 @@
             // 以点放大居中， 是配变，则显示停电区域
             drawPoint(_point){
                 // _point = msg.parameters.id 根据收到的消息
+                this.activeName = 'first'
+                document.getElementById('tabs').style.display = 'block' //让标签页显示
+
 //                var that = this
                 if(this.selectedPoint2.length != 0 ){
                     for(let pp of this.selectedPoint2){
@@ -814,12 +981,13 @@
                     data: '{"id":"'+_point+'"}',
                     contentType:"application/json",
                     dataType:"json",
-                    async:false,
+                    async:true,
                     success: function(data) {//请求成功完成后要执行的方法
 
 //                        var result = JSON.stringify(data); //json对象转成字符串
 //                        that.point = data;
                         let po =data[0]
+                        that.type = po.type
                         let label = new BMap.Label(po.name, { offset: new BMap.Size(-50, 70) })
                         label.setStyle({borderColor: '#4682B4',borderWidth:'4px',borderStyle:'double',fontSize:'20px',fontFamily:'黑体',fontWeight:'bold'})
                         let center = new BMap.Point(po.lg, po.lat)
@@ -848,6 +1016,22 @@
                         }
                     }
                 })
+                //展示设备数据
+
+              //  getPointData(_point)
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"id":"'+_point+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:true,  // 异步请求
+                    success: function(data) {//请求成功完成后要执行的方法
+
+                    }
+                })
+
             },
 		 //展示信息窗口
 		  openInfo(x,y,content){
@@ -919,23 +1103,23 @@
                             var t = ""
                             if(item.type === '变电站'){
                                 if(item.voltage=== 35){
-                                    icon = new BMap.Icon('./images/cd35.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                    icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                                 }else if(item.voltage===110){
-                                    icon = new BMap.Icon('./images/cd110.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                    icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                                 }else if(item.voltage=== 220){
-                                    icon = new BMap.Icon('./images/cd220.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                    icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                                 }else if(item.voltage===500){
-                                    icon = new BMap.Icon('./images/cd500.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                    icon = new BMap.Icon('./images/500.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                                 }
                                 t = item.name.indexOf('变')
                                 label = new BMap.Label(item.name.substr(0,t), { offset: new BMap.Size(-30, 40) })
                             }else {
                                 switch(item.type){
                                     case '环网柜':
-                                        icon = new BMap.Icon('./images/hwg.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                        icon = new BMap.Icon('./images/hwg.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                                         break
                                     case '开闭站':
-                                        icon = new BMap.Icon('./images/kbz.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                        icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                                         break
                                     case '杆塔':
                                         icon = ''
@@ -1003,10 +1187,14 @@
 
             //画整条线路 如 ml512 yd511
             drawLine(_line){
-                // 先获取线路数据   this.getLineData(_line)
+
                 this.flines.push(_line)
-                this.getLine(_line)
+                this.getLine(_line)  // 获取线路点线
                 this.getLineData(_line)  // 获取线路数据
+                this.type = '线路'
+                this.activeName = 'first'
+                document.getElementById('tabs').style.display = 'block'; //让标签页显示
+
                 // 先清理地图上的所选线路的点和连线
                 if(this.allMarker.length != 0 ){
                     for(let pp of this.allMarker){
@@ -1034,39 +1222,40 @@
                     }
                 }
                 //1. 画出该线路上的所有点 包括配变、开闭站、环网柜、杆塔
+                console.log(this.point_l)
                 for(let po of this.point_l){
                     var icon = ''
                     var label = new BMap.Label(po.name, { offset: new BMap.Size(-30, 45) })
 
                     if(po.voltage != null){
                         if(po.voltage=== 35){
-                            icon = new BMap.Icon('./images/cd35.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                            icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                         }else if(po.voltage===110){
-                            icon = new BMap.Icon('./images/cd110.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                            icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                         }else if(po.voltage=== 220){
-                            icon = new BMap.Icon('./images/cd220.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                            icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                         }
 
 
                     }  else {
                        switch(po.type){
                          case '环网柜':
-                           icon = new BMap.Icon('./images/hwg.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           icon = new BMap.Icon('./images/hwg.png', new BMap.Size(25, 25), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                            break;
                          case '开闭站':
-                          icon = new BMap.Icon('./images/kbz.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                          icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                            break;
                        case '配电室':
-                           icon = new BMap.Icon('./images/pd.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           icon = new BMap.Icon('./images/pd.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                            break;
                        case '箱式变电站':
-                           icon = new BMap.Icon('./images/xb.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           icon = new BMap.Icon('./images/xb.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                            break;
                        case '熔断器':
-                           icon = new BMap.Icon('./images/rdq.png', new BMap.Size(46, 107), { fillOpacity: 1, anchor: new BMap.Size(23, 54) })
+                           icon = new BMap.Icon('./images/kbz.png', new BMap.Size(46, 107), { fillOpacity: 1, anchor: new BMap.Size(23, 54) })
                            break;
                        case '电缆分接箱':
-                           icon = new BMap.Icon('./images/df.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           icon = new BMap.Icon('./images/df.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
                            break;
                        case '杆塔':
                           icon = new BMap.Icon('./images/gt.png', new BMap.Size(21, 21), { fillOpacity: 1, anchor: new BMap.Size(12, 12) })
@@ -1074,6 +1263,9 @@
                        case '配变':
                            icon = new BMap.Icon('./images/pb.png', new BMap.Size(113, 72), { fillOpacity: 1, anchor: new BMap.Size(57, 36) })
                            break
+                           default:
+                               icon = new BMap.Icon('./images/df.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                               break;
                        }
                      }
 
@@ -1180,7 +1372,7 @@
             },
             //缩放
             zoomchange( msg){
-                if(msg === '放大'){
+                if(msg === 'zoomIn'){
                     let z =this.map.getZoom()
                     z = z+2
                     this.map.setZoom(z)
