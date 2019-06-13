@@ -498,26 +498,26 @@ span{
                     var icon = ''
                     if (item.voltage === 35) {
                         icon = new BMap.Icon('./images/cd35.png', new BMap.Size(50, 50), {
-                            fillOpacity: 1,
+                            fillOpacity: 0.5,
                             anchor: new BMap.Size(25, 25)
                         })
                     } else if (item.voltage === 110) {
                         icon = new BMap.Icon('./images/cd110.png', new BMap.Size(50, 50), {
-                            fillOpacity: 1,
+                            fillOpacity: 0.5,
                             anchor: new BMap.Size(25, 25)
                         })
                     } else if (item.voltage === 220) {
                         icon = new BMap.Icon('./images/cd220.png', new BMap.Size(50, 50), {
-                            fillOpacity: 1,
+                            fillOpacity: 0.5,
                             anchor: new BMap.Size(25, 25)
                         })
                     } else if (item.voltage === 500) {
                         icon = new BMap.Icon('./images/cd500.png', new BMap.Size(50, 50), {
-                            fillOpacity: 1,
+                            fillOpacity: 0.5,
                             anchor: new BMap.Size(25, 25)
                         })
                     }
-                    // var n0 = new BMap.Icon('../cd/static/bdmap/images/n0.png', new BMap.Size(33, 34), { fillOpacity: 1, anchor: new BMap.Size(16, 17) })
+                    // var n0 = new BMap.Icon('../cd/static/bdmap/images/n0.png', new BMap.Size(33, 34), { fillOpacity: 0.5, anchor: new BMap.Size(16, 17) })
                     var p0 = new BMap.Point(item.lg, item.lat)
                     var m0 = new BMap.Marker(p0, {icon: icon})
                     item["marker"]=m0
@@ -565,7 +565,7 @@ span{
 					   for(let go of li.guai){
 					     var p = new BMap.Point(go.lg, go.lat)
 					     dd.push(p)
-                           var icon = new BMap.Icon('./images/gt.png', new BMap.Size(21, 21), { fillOpacity: 1, anchor: new BMap.Size(12, 12) })
+                           var icon = new BMap.Icon('./images/gt.png', new BMap.Size(21, 21), { fillOpacity: 0.5, anchor: new BMap.Size(12, 12) })
                            var mm = new BMap.Marker(p, { icon: icon ,title:p.name})
                            this.map.addOverlay(mm)
                            this.allMarker.push(mm)
@@ -643,6 +643,18 @@ span{
                                 if (z >14) {this.map.addOverlay(po.marker) }
                                 break
                             case '环网柜':
+                                if (z>14) {this.map.addOverlay(po.marker) }
+                                break
+                            case '熔断器':
+                                if (z>14) {this.map.addOverlay(po.marker) }
+                                break
+                            case '配电室':
+                                if (z>14) {this.map.addOverlay(po.marker) }
+                                break
+                            case '电缆分接箱':
+                                if (z>14) {this.map.addOverlay(po.marker) }
+                                break
+                            case '箱式变电站':
                                 if (z>14) {this.map.addOverlay(po.marker) }
                                 break
                             case '配变':
@@ -1103,29 +1115,29 @@ span{
                             var t = ""
                             if(item.type === '变电站'){
                                 if(item.voltage=== 35){
-                                    icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                                 }else if(item.voltage===110){
-                                    icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                                 }else if(item.voltage=== 220){
-                                    icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                                 }else if(item.voltage===500){
-                                    icon = new BMap.Icon('./images/500.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/500.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                                 }
                                 t = item.name.indexOf('变')
                                 label = new BMap.Label(item.name.substr(0,t), { offset: new BMap.Size(-30, 40) })
                             }else {
                                 switch(item.type){
                                     case '环网柜':
-                                        icon = new BMap.Icon('./images/hwg.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                                        icon = new BMap.Icon('./images/hwg.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                                         break
                                     case '开闭站':
-                                        icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                                        icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                                         break
                                     case '杆塔':
                                         icon = ''
                                         break
                                     default:
-                                        icon = new BMap.Icon('./images/pb.png', new BMap.Size(113, 72), { fillOpacity: 1, anchor: new BMap.Size(57, 37) })
+                                        icon = new BMap.Icon('./images/pb.png', new BMap.Size(113, 72), { fillOpacity: 0.5, anchor: new BMap.Size(57, 37) })
                                         break
                                 }
                             }
@@ -1226,52 +1238,46 @@ span{
                 for(let po of this.point_l){
                     var icon = ''
                     var label = new BMap.Label(po.name, { offset: new BMap.Size(-30, 45) })
-
-                    if(po.voltage != null){
+                    if(po.voltage !== null){
                         if(po.voltage=== 35){
-                            icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                            icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                         }else if(po.voltage===110){
-                            icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                            icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                         }else if(po.voltage=== 220){
-                            icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                            icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                         }
-
-
                     }  else {
+                        console.log(po.type)
                        switch(po.type){
                          case '环网柜':
-                           icon = new BMap.Icon('./images/hwg.png', new BMap.Size(25, 25), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                           icon = new BMap.Icon('./images/hwg.png', new BMap.Size(25, 25), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                            break;
                          case '开闭站':
-                          icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                          icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                            break;
                        case '配电室':
-                           icon = new BMap.Icon('./images/pd.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                           icon = new BMap.Icon('./images/pd.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                            break;
                        case '箱式变电站':
-                           icon = new BMap.Icon('./images/xb.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                           icon = new BMap.Icon('./images/xb.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                            break;
                        case '熔断器':
-                           icon = new BMap.Icon('./images/kbz.png', new BMap.Size(46, 107), { fillOpacity: 1, anchor: new BMap.Size(23, 54) })
+                           icon = new BMap.Icon('./images/rdq.png', new BMap.Size(21, 50), { fillOpacity: 0.5, anchor: new BMap.Size(11, 25) })
                            break;
-                       case '电缆分接箱':
-                           icon = new BMap.Icon('./images/df.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
+                       case "电缆分接箱":
+                           icon = new BMap.Icon('./images/df.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
                            break;
                        case '杆塔':
-                          icon = new BMap.Icon('./images/gt.png', new BMap.Size(21, 21), { fillOpacity: 1, anchor: new BMap.Size(12, 12) })
+                          icon = new BMap.Icon('./images/gt.png', new BMap.Size(15, 15), { fillOpacity: 0.5, anchor: new BMap.Size(8, 8) })
                            break;
                        case '配变':
-                           icon = new BMap.Icon('./images/pb.png', new BMap.Size(113, 72), { fillOpacity: 1, anchor: new BMap.Size(57, 36) })
+                           icon = new BMap.Icon('./images/pb.png', new BMap.Size(56, 35), { fillOpacity: 0.5, anchor: new BMap.Size(28, 18) })
                            break
-                           default:
-                               icon = new BMap.Icon('./images/df.png', new BMap.Size(50, 50), { fillOpacity: 1, anchor: new BMap.Size(25, 25) })
-                               break;
                        }
                      }
 
                     var p0 = new BMap.Point(po.lg, po.lat)
                     var m0 = new BMap.Marker(p0, { icon: icon })
-
                        this.map.addOverlay(m0)
                         po["marker"]=m0
 
@@ -1279,7 +1285,6 @@ span{
                     po["isShow"]= 'true';
                     this.selectedPoint.push(m0)
                 }
-
                 // 2. 画出该线路的连线
                 var p1,p2
 

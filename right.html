@@ -11,8 +11,19 @@
     <link rel="stylesheet" href="./css/element.css">
     <link rel="stylesheet" href="./css/v-chart.css">
     <style>
+        ::-webkit-scrollbar{
+            display:none;
+        }
+
+        body{
+            margin:0;
+
+        }
         #app{
             background: transparent;
+            top:0px;
+            left:0px;
+
         }
         #main{
             background: url("./images/xl.png") no-repeat;
@@ -61,13 +72,13 @@
             /*padding:5px;*/
             /*margin: 5px;*/
             margin-left:30px;
+            /*修改左侧两个标题栏字体大小*/
+            font-size: 50px;
         }
         .title2{
             color: white;
-            /*height:100px;*/
-            /*padding:5px;*/
-            /*margin: 5px;*/
-            /*margin-left:10px;*/
+            /*修改右侧两个标题栏字体大小*/
+            font-size: 50px;
         }
         .chart{
             padding:100px;
@@ -87,7 +98,7 @@
             <div >
                 <span class="title">负载率</span>
                 <div class="chart">
-                    <ve-line :data="chartData1" :settings="chartSettings" :height="height"></ve-line>
+                    <ve-line :data="chartData1" :settings="chartSettings" :extend="chartExtend" :legend-visible="false"  :height="height"></ve-line>
                 </div>
 
             </div>
@@ -96,7 +107,7 @@
             <div >
                 <span class="title2">负荷</span>
                 <div class="chart">
-                <ve-line :data="chartData2" :settings="chartSettings" :height="height"></ve-line>
+                <ve-line :data="chartData2" :settings="chartSettings"  :extend="chartExtend" :legend-visible="false"  :height="height"></ve-line>
                 </div>
             </div>
         </div>
@@ -106,7 +117,7 @@
            <div >
                <span class="title">载流量</span>
                <div class="chart">
-               <ve-line :data="chartData3" :settings="chartSettings" :height="height"></ve-line>
+               <ve-line :data="chartData3" :settings="chartSettings" :extend="chartExtend"  :legend-visible="false" :height="height"></ve-line>
                    </div>
            </div>
        </div>
@@ -114,7 +125,7 @@
            <div >
                <span class="title2">负荷</span>
                <div class="chart">
-               <ve-line :data="chartData1" :settings="chartSettings" :height="height"></ve-line>
+               <ve-line :data="chartData1" :settings="chartSettings"    :extend="chartExtend" :legend-visible="false"  :height="height" ></ve-line>
                    </div>
            </div>
        </div>
@@ -132,20 +143,46 @@
         el: '#app',
         data(){
             this.chartSettings = {
-                area:true,
-                xAxis:[{
+                area:true
+            }
+            this.chartExtend = {
+                //设置x轴字体大小 和颜色
+                xAxis: {
+                    axisLabel: {
+                        show: true,
+                        textStyle: {
+                            color: '#FFFFFF',  //更改坐标轴文字颜色
+                            fontSize : 30      //更改坐标轴文字大小
+                        }
+                    },
                     axisLine:{
-                        color:'#ffffff'
-                    }
-                }],
-                yAxis:[
-                    {
-                        textType:{
-                            color:'#ffffff'
+                        lineStyle:{
+                            color:'#FFFFFF' //更改坐标轴颜色
                         }
                     }
-                ]
-
+                },
+                //设置y轴字体大小 和颜色
+                yAxis: {
+                    axisLabel: {
+                        show: true,
+                        textStyle: {
+                            color: '#FFFFFF',  //更改坐标轴文字颜色
+                            fontSize : 30      //更改坐标轴文字大小
+                        }
+                    },
+                    axisLine:{
+                        lineStyle:{
+                            color:'#FFFFFF' //更改坐标轴颜色
+                        }
+                    }
+                },
+              // 设置标题颜色  value
+//                legend: {
+//                    textStyle: {
+//                        color: 'red',
+//                        fontSize: 30
+//                    }
+//                }
             }
             return{
                 src:'./images/xl.png',
