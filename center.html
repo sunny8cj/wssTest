@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./js/vue.js"></script>
+    <script src="./js/jquery-3.3.1.js"></script>
+    <script src="./js/draw.js"></script>
+
+    <script src="./js/element.js"></script>
+    <link rel="stylesheet" href="./css/element.css">
+
+    <script type="text/javascript" src="http://127.0.0.1/cd2/static/bdmap/map_load.js"></script>
+    <script src="./js/heatmap.min.js"></script>
+
+    <!--<script type="text/javascript" src="http://api.map.baidu.com/getscript?v=3.0&ak=Dn7WS2XQ8OuAN6oIP9dHieHOOsqKIjOt"></script>-->
+    <!--<script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>-->
+
+    <style>
+        #map_demo {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 100%;
+        }
+        .wss {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            top: 20px;
+        }
+#tabs{
+    background: cadetblue;
+    width: 300px;
+    height: 200px;
+    font-size: 26px;
+    display: none;
+/*color:white;*/
+}
+    </style>
+    <style>/*去除百度地图版权*/
+    .anchorBL{
+        display:none;
+    }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="map_demo" ref="allmap"></div>
+    <div class='wss'>
+        <!--<button  style="float:left;" @click="drawDist('营子区')">营子区</button>-->
+        <!--<button  style="float:left;" @click="drawDist('双桥区')">双桥区</button>-->
+        <!--<button  style="float:left;" @click="heatMap('负载率')">负载率热力图</button>-->
+        <!--<button  style="float:left;" @click="drawScope('my513')">my513</button>-->
+        <button  style="float:left;" @click="drawLine('nj514')">nj514</button>
+        <button  style="float:left;" @click="drawLine('my513')">my513</button>
+        <!--&lt;!&ndash;<button  style="float:left;" @click="drawLine('yd511')">yd511</button>&ndash;&gt;-->
+        <!--<button  style="float:left;" @click=" drawCD()">承德市</button>-->
+        <!--<button  style="float:left;" @click=" drawPoint(110674000000008)">设备点1</button>-->
+        <!--<button  style="float:left;" @click=" drawPoint(110681500000007)">设备点2</button>-->
+        <!--<button  style="float:left;" @click="zoomIn()">放大</button>-->
+        <!--<button  style="float:left;" @click="showInfo(1)">自动</button>-->
+        <!--<button  style="float:left;" @click="addCheckbox('110')">110</button>-->
+        <!--<button  style="float:left;" @click="addCheckbox('220')">220</button>-->
+		<!--<button  style="float:left;" @click="test()">画线</button>-->
+        <!--<el-button type="info">信息按钮</el-button>-->
+
+        <el-tabs v-model="activeName" type="card" @tab-click="handleClick" id="tabs">
+            <el-tab-pane label="基础数据" name="first" >
+                线路名称：{{xl.feederName}}<br>
+                所带配变数: {{xl.dmsSectionCount}}<br>
+                分支数: {{xl.dmsSectionCount}}<br>
+                线路长度: {{xl.lineLength}}
+
+            </el-tab-pane>
+            <el-tab-pane label="运行数据" name="second">
+                容量: {{xl.ratedCurrent}}
+                <br>
+                实时负荷: {{xl.activePower}}
+                <br>
+                实时负载率: {{xl.currentLoading}}
+            </el-tab-pane>
+            <el-tab-pane label="其他数据" name="third">其他数据</el-tab-pane>
+        </el-tabs>
+
+
+    </div>
+
+
+</div>
+<script type="text/javascript">
+    var vm = new Vue({
+        el: '#app',
+        data:{
+            msg:'nihao',
+            xl:{
+                feederName:'我是测试数据', // 线路名称
+                dmsTransCount:'23', // 所带配变数
+                dmsSectionCount: '4', //分支数
+                ratedCurrent: '879',  //容量
+                activePower: 'gag', //实时负荷
+                lineLength: '122',  // 线路长度
+                currentLoading:'rywy',  // 实时负载率
+                currentLoadingHis: [] ,//负载率
+                activePowerHis: [], //历史负荷
+                ratedCurrentHis: [] // 载流量
+            },
+            activeName: 'second',
+            map: null,
+            border:[],
+            border_marker:[],
+            checkbox1:[],
+            xj: { 'p': [ ], 'c': [ ] }, //xj.p为各个点周围的户表的坐标对，xj.c为地图中各个点，
+            wjj: [],
+            xx: [],
+            point_bdz:[],
+            line_bdz:[],
+            point:[],
+            line:[],
+            point_d:[],
+            line_d:[],
+            point_l:[],
+            line_l:[],
+            line_s:null,
+            allMarker:[],
+            selectedDist:[],
+            selectedPoint:[],
+            selectedPoint2:[],//选中的那个点
+            selectedLine:[],
+            selectedLine_s:[],
+            scopePoint:[], // 画供电范围的点
+            dist:'',
+            flines:[],
+            pb:[],
+            hb:[],
+            ml514:[],
+            my513:[],
+            psource: '',
+            ptarget: '',
+            fline:[],
+            heatmapOverlay:null,
+            heatPoints:[]
+        },
+        mounted () {
+
+            this.getData();
+                        this.init()
+//            this.drawScope('my513');
+        },
+        methods: {
+            init(){
+
+                this.initMap()
+            },
+            handleClick(){},
+            setLocation( x,y,z) {
+                this.map.centerAndZoom(new BMap.Point(x,y), z);
+            },
+            zoomIn(){
+               // this.map.zoomIn()
+				  let z =this.map.getZoom()
+                    z = z+2
+                    this.map.setZoom(z)
+                this.showInfo(1)
+            },
+            addCheckbox(value){
+                this.checkbox1.push(value)
+                this.showInfo(2)
+            },
+            //筛选
+            setCheckbox(value){
+                this.checkbox1 =[]
+                var arr = ["abc","dc","gah"]
+                arr =value.split(',');
+                this.checkbox1.push(...arr)
+                this.showInfo(2)
+            },
+            //    // 获取当前区域的负载率 或者 户均容量
+            showFZL(_dist, _type){
+                var that = this
+                that.heatPoints = []
+                if(that.heatmapOverlay != null){
+                    that.heatmapOverlay.hide()
+                }
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+                    type: "POST",
+                    data: '{"types":["配变"],"dist":"'+_dist+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+                        console.log(data)
+                        for(let element of data){
+                            that.heatPoints.push({
+                                "lng":element.lg,
+                                "lat":element.lat,
+                                "count":300  // element.fzl   element.hjrl
+                            })
+                        }
+                        console.log(that.heatPoints)
+
+                    }
+                })
+            },
+            //画热力图
+            heatMap(_type){
+                this.showFZL(this.dist,_type)
+                this.heatmapOverlay = new BMapLib.HeatmapOverlay({"radius":20});
+                this.map.addOverlay(this.heatmapOverlay);
+                this.heatmapOverlay.setDataSet({data:this.heatPoints,max:400});
+//                this.heatmapOverlay.show();
+            },
+            //承德市区域外 黑色
+			onCd1(){
+                var that =this
+                $.ajax({
+                    url:"http://127.0.0.1:8089/web/map/queryDistBoundary",
+                    type: "POST",
+                    data: '{"dist":"外边界"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function (data) {
+                        that.border = data
+                        var dd =[]
+                        for(let bb of that.border){
+                            var p1 = new BMap.Point(bb.lg,bb.lat)
+                            dd.push(p1)
+                        }
+                        var polygon = new BMap.Polygon(dd, {strokeColor: "#000000", strokeWeight: 0.01, strokeOpacity: 0.01, fillColor: '#000000', fillOpacity: 0.8 })
+                        that.map.addOverlay(polygon)
+                    }
+                })
+			},
+			    //选中区县的边界
+			onCd2 (_dist) {
+			    for(let bb of this.border_marker){
+                    this.map.removeOverlay(bb)
+                }
+			    var that =this
+                $.ajax({
+                    url:"http://127.0.0.1:8089/web/map/queryDistBoundary",
+                    type: "POST",
+                    data: '{"dist":"'+_dist+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function (data) {
+                        that.border = data
+                        var dd =[]
+                        for(let bb of that.border){
+                            var p1 = new BMap.Point(bb.lg,bb.lat)
+                            dd.push(p1)
+                        }
+                        var polygon = new BMap.Polygon(dd, { strokeColor:'#CD6839',strokeWeight: 1, strokeOpacity: 0.5,fillOpacity: 0.15 ,fillColor:'#CD6839'})
+                        that.map.addOverlay(polygon)
+                        that.border_marker.push(polygon)
+                    }
+                })
+			},
+            // 获取 所有变电站的point 以及变电站-变电站的连线
+            getData(){
+                var that =this
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"types":["变电站"]}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.point_bdz = data;
+                    }
+                })
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{ "sourceType": "变电站","targetType": "变电站" }',  // 通过 id 筛选连线
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.line_bdz = data;
+                    }
+                })
+            },
+            drawCD(){
+                this.dist = '承德市'
+                this.flines = []
+                document.getElementById('tabs').style.display ='none'
+                this.map.removeOverlay(this.heatmapOverlay)
+			    if(this.allMarker.length != 0){
+                    for (let item of this.allMarker) {
+                        this.map.removeOverlay(item)  // 清理地图上的市级的点线
+                    }
+                }
+                for(let bb of this.border_marker){
+                    this.map.removeOverlay(bb)
+                }
+                if(this.selectedPoint2.length != 0 ){
+                    for(let pp of this.selectedPoint2){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+               if(this.selectedPoint.length != 0){
+                    for (let item of this.selectedPoint) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.selectedLine.length != 0){
+                    for (let item of this.selectedLine) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                    if(this.wjj.length != 0){
+                    for (let item of this.wjj) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                var that = this
+
+                // 画承德市的点
+                for (let item of this.point_bdz) {
+                    var icon = ''
+                    if (item.voltage === 35) {
+                        icon = new BMap.Icon('./images/cd35.png', new BMap.Size(99, 99), {
+                            fillOpacity: 1,
+                            anchor: new BMap.Size(50, 50)
+                        })
+                    } else if (item.voltage === 110) {
+                        icon = new BMap.Icon('./images/cd110.png', new BMap.Size(99, 99), {
+                            fillOpacity: 1,
+                            anchor: new BMap.Size(50, 50)
+                        })
+                    } else if (item.voltage === 220) {
+                        icon = new BMap.Icon('./images/cd220.png', new BMap.Size(99, 99), {
+                            fillOpacity: 1,
+                            anchor: new BMap.Size(50, 50)
+                        })
+                    } else if (item.voltage === 500) {
+                        icon = new BMap.Icon('./images/cd500.png', new BMap.Size(99, 99), {
+                            fillOpacity: 1,
+                            anchor: new BMap.Size(50, 50)
+                        })
+                    }
+                    // var n0 = new BMap.Icon('../cd/static/bdmap/images/n0.png', new BMap.Size(33, 34), { fillOpacity: 1, anchor: new BMap.Size(16, 17) })
+                    var p0 = new BMap.Point(item.lg, item.lat)
+                    var m0 = new BMap.Marker(p0, {icon: icon})
+                    item["marker"]=m0
+                    item["isShow"]= 'true'
+                    this.allMarker.push(m0)
+                    // xx.push(p0)
+                    this.map.addOverlay(m0)
+
+                    this.selectedPoint.push(m0)
+
+
+                }
+                //画承德市的线
+                for(let li of this.line_bdz){
+				  var dd = []
+				       var p1,p2
+               var line_color,line_style,line_weight
+                    for (let po of this.point_bdz){
+                        if(po.id === li.source){
+                            p1 = new BMap.Point(po.lg, po.lat)
+                        } else  if(po.id === li.target){
+                            p2 = new BMap.Point(po.lg, po.lat)
+							switch(po.voltage){
+							  case 220:
+							   line_color = 'purple'
+							   line_style = 'solid'
+							   line_weight = 2
+								break
+							  case 110:
+								line_color = 'red'
+								line_style = 'solid'
+								line_weight = 2
+								break
+							  case 35:
+								line_color = '#0000EE'
+								line_style = 'solid'
+								line_weight = 2
+								break
+							}
+                        }
+                    }
+
+					       dd.push(p1)
+//					   加入li的拐点
+					   for(let go of li.guai){
+					     var p = new BMap.Point(go.lg, go.lat)
+					     dd.push(p)
+                           var icon = new BMap.Icon('./images/gt.png', new BMap.Size(21, 21), { fillOpacity: 1, anchor: new BMap.Size(12, 12) })
+                           var mm = new BMap.Marker(p, { icon: icon ,title:p.name})
+                           this.map.addOverlay(mm)
+                           this.allMarker.push(mm)
+					   }
+					  dd.push(p2)
+					  //画连线
+
+                    var polygon = new BMap.Polyline(dd, {strokeColor:line_color, strokeWeight: line_weight,strokeStyle: line_style, strokeOpacity: 1})
+                    this.map.addOverlay(polygon)
+                    li["line"]=polygon
+                    this.selectedLine.push(polygon)
+                }
+                this.map.centerAndZoom(new BMap.Point(117.972845,41.23822764),11)
+                this.showInfo(1);
+
+
+
+            },
+			//测试
+			test(){
+			var dd =[]
+			var p1 = new BMap.Point(117.972845,40.955677)
+			var p2 = new BMap.Point(117.872845,40.955677)
+			var p3 = new BMap.Point(117.972845,40.655677)
+			dd.push(p1)
+			dd.push(p2)
+			dd.push(p3)
+			var polygon = new BMap.Polyline(dd, {strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.5})
+            this.map.addOverlay(polygon)
+			     this.selectedLine.push(polygon)
+
+			},
+            showInfo (e) {
+                var z = this.map.getZoom()
+                var point =[]
+                var line =[]
+                // 根据当前层级判断point的值
+              if(this.flines.length !=0){
+				  point = this.point_l
+				   line = this.line_l
+			  }else{
+				if(this.dist ==='承德市'){
+				  point = this.point_bdz
+				  line = this.line_bdz
+				}else {
+				  point = this.point_d
+				  line = this.line_d
+				}
+			  }
+                // 自动
+                if(e ===1){
+                    for(let po of this.selectedPoint2){
+                        this.map.removeOverlay(po)
+                    }
+                    this.checkbox1 = []
+                    // alert(z)   // 11  13 15
+                    for (let po of point){
+                        this.map.removeOverlay(po.marker)
+                        switch(po.voltage){
+                            case 35:
+                                if (z >14) {this.map.addOverlay(po.marker) }
+                                break
+                            case 110:
+                                if (z>12) {this.map.addOverlay(po.marker) }
+                                break
+                            case 220:
+                                if (z>10) { this.map.addOverlay(po.marker) }
+                                break
+                            case 500:
+                                if (z >10) { this.map.addOverlay(po.marker) }
+                                break
+                        }
+                        switch(po.type){
+                            case '开闭站':
+                                if (z >14) {this.map.addOverlay(po.marker) }
+                                break
+                            case '环网柜':
+                                if (z>14) {this.map.addOverlay(po.marker) }
+                                break
+                            case '配变':
+                                if (z>14) { this.map.addOverlay(po.marker) }
+                                break
+                            case '杆塔':
+                                if (z >14) { this.map.addOverlay(po.marker) }
+                                break
+                        }
+                    }
+                    for (let li of line){
+                        this.map.removeOverlay(li.line)
+                        switch(li.voltage){
+                            case 220:
+                                if (z>10) {this.map.addOverlay(li.line) }
+                                break
+                            case 110:
+                                if (z>12) {this.map.addOverlay(li.line) }
+                                break
+                            case 35:
+                                if (z >14) {  this.map.addOverlay(li.line) }
+                                break
+                            default:   // 其他都是单线图
+                                if (z >14) {  this.map.addOverlay(li.line) }
+                                break
+                        }
+                    }
+                }
+                // 多选
+                if(e === 2){
+                    // 反向选择 ，如果checkbox1不包含哪个，地图就把哪个删掉
+                    for (let po of point){
+                        this.map.removeOverlay(po.marker)
+                        po.isShow = 'false'
+                        if(po.type === '变电站'){
+                            switch (po.voltage) {
+                                case 35:
+                                    if (this.checkbox1.indexOf('35') >= 0) {
+                                        this.map.addOverlay(po.marker)
+                                        po.isShow='true'
+                                    }
+                                    break
+                                case 110:
+                                    if (this.checkbox1.indexOf('110') >= 0) {
+                                        this.map.addOverlay(po.marker)
+                                        po.isShow='true'
+                                    }
+                                    break
+                                case 220:
+                                    if (this.checkbox1.indexOf('220') >= 0) {
+                                        this.map.addOverlay(po.marker)
+                                        po.isShow='true'
+                                    }
+                                    break
+                                case 500:
+                                    if (this.checkbox1.indexOf('500') >= 0) {
+                                        this.map.addOverlay(po.marker)
+                                        po.isShow='true'
+                                    }
+                                    break
+                            }
+                        }else {
+                            if(po.type ==='配变'){
+                                if (this.checkbox1.indexOf('配变') >= 0) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
+                            }else if(po.type ==='开闭站'){
+                                if (this.checkbox1.indexOf('开闭站') >= 0) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
+                            }else if(po.type ==='环网柜'){
+                                if (this.checkbox1.indexOf('环网柜') >= 0) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
+                            }else if(po.type ==='杆塔'){
+                                po.isShow='true'
+                            }
+                        }
+                    }
+                    for (let li of line){
+                        this.map.removeOverlay(li.line)
+                        // 如果checkbox1包括source.voltage target.volget， 则这条线出现
+                        var p1,p2
+                        for(let po of point){
+                            if(po.id === li.source){
+                                p1 = po
+                            }else if(po.id === li.target){
+                                p2 = po
+                            }
+                        }
+                        if((p1.isShow === 'true')&&(p2.isShow === 'true')){
+                            this.map.addOverlay(li.line)
+                        }
+                    }
+                }
+
+            },
+            //获取区县的点和线
+            getDistData(_dist){
+                var that =this
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"types":["变电站","开闭站","环网柜"],"dist":"'+_dist+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.point_d = data;
+
+                    }
+                })
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"types":["变电站","开闭站","环网柜"], "dist":"'+ _dist+'"}',  // 通过 id 筛选连线
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.line_d = data;
+
+                    }
+                })
+            },
+            getLineData(value){
+                var that =this
+                document.getElementById('tabs').style.display ='block'
+                $.ajax({
+                    url:"http://127.0.0.1:8089/index/getLineInfo",
+                    type: "POST",
+                    data: '{"fline":"'+value+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function (response) {
+                        console.log(response)
+                        that.xl =response
+
+                    }
+                })
+
+            },
+            // 获取 特定线路上的point 以及该线路的连线
+            getLine(_line){
+                var that =this
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"flines":["'+_line+'"]}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.point_l = data;
+                        console.log(data)
+
+                    }
+                })
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{ "fline":"'+ _line+'"}',  // 通过 id 筛选连线
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.line_l = data;
+
+                    }
+                })
+            },
+            initMap () {
+
+                let map = new BMap.Map(this.$refs.allmap)
+//                let map = new BMap.Map('map_demo')
+                this.map = map
+//                map.centerAndZoom(new BMap.Point(117.585671, 41.422625), 9)
+                var point = new BMap.Point(117.418261, 39.921984);
+                map.centerAndZoom(point,9);
+                map.enableScrollWheelZoom(true)
+				this.onCd1()
+                this.drawCD()
+            },
+            //获取配变
+            getPbData(_line){
+                var that =this
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"types":["配变"],"flines":["'+_line+'"]}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.pb = data;
+                    }
+                })
+            },
+			 //获取线路户表
+            getLineBiao(_line){
+                var that =this
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryBiao",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"fline":"'+_line+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                        that.hb = data;
+                    }
+                })
+            },
+            // 画供电范围
+            drawScope(_line){
+                this.getPbData(_line)
+                if(this.scopePoint.length != 0){
+                    for (let item of this.scopePoint) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.selectedPoint2.length != 0 ){
+                    for(let pp of this.selectedPoint2){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+                if(this.selectedPoint.length != 0 ){
+                    for(let pp of this.selectedPoint){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+                if(this.selectedLine.length != 0){
+                    for (let item of this.selectedLine) {
+                        this.map.removeOverlay(item)
+                    }
+                }
+                if(this.wjj.length != 0){
+                    for (let item of this.wjj) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                var c1 = new BMap.Icon('./images/circle.png', new BMap.Size(33, 34), { anchor: new BMap.Size(8, 8) })
+                var dd = []
+
+                for (let po of this.pb) {
+                    var dd = []
+                    for(let pp of po.biao){
+                        var p1 = new BMap.Point(pp.lg, pp.lat)
+                        dd.push(p1)
+                    }
+                    var polygon = new BMap.Polygon(dd, {strokeColor: '#3A5FCD', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#3A5FCD' ,fillOpacity: 0.6 })
+                    this.map.addOverlay(polygon)
+                    this.wjj.push(polygon)
+                }
+                this.map.setZoom(16)
+            },
+            // 画供电范围
+            drawScope1(_line){
+                this.getLineBiao(_line)
+                if(this.scopePoint.length != 0){
+                    for (let item of this.scopePoint) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.selectedPoint2.length != 0 ){
+                    for(let pp of this.selectedPoint2){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+                if(this.selectedPoint.length != 0 ){
+                    for(let pp of this.selectedPoint){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+                if(this.selectedLine.length != 0){
+                    for (let item of this.selectedLine) {
+                        this.map.removeOverlay(item)
+                    }
+                }
+                if(this.wjj.length != 0){
+                    for (let item of this.wjj) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                var c1 = new BMap.Icon('./images/circle.png', new BMap.Size(33, 34), { anchor: new BMap.Size(8, 8) })
+                var dd = []
+                for (let po of this.hb) {
+                    var p1 = new BMap.Point(po.lg, po.lat)
+                    var m1 = new BMap.Marker(p1, { icon: c1 })
+                    this.map.addOverlay(m1)
+                    this.wjj.push(m1)
+                    dd.push(p1)
+                }
+                var polygon = new BMap.Polygon(dd, {strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 0.5,fillOpacity: 0.1})
+                this.map.addOverlay(polygon)
+                this.wjj.push(polygon)
+                this.map.setZoom(16)
+            },
+            // 以点放大居中， 是配变，则显示停电区域
+            drawPoint(_point){
+                // _point = msg.parameters.id 根据收到的消息
+//                var that = this
+                if(this.selectedPoint2.length != 0 ){
+                    for(let pp of this.selectedPoint2){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+                if(this.wjj.length != 0){
+                    for (let item of this.wjj) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+
+                // 选中的设备信息从接口获取的话，就直接是结果data
+                var that =this
+                $.ajax({
+                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                    type: "POST",
+                    data: '{"id":"'+_point+'"}',
+                    contentType:"application/json",
+                    dataType:"json",
+                    async:false,
+                    success: function(data) {//请求成功完成后要执行的方法
+
+//                        var result = JSON.stringify(data); //json对象转成字符串
+//                        that.point = data;
+                        let po =data[0]
+                        let label = new BMap.Label(po.name, { offset: new BMap.Size(-50, 70) })
+                        label.setStyle({borderColor: '#4682B4',borderWidth:'4px',borderStyle:'double',fontSize:'20px',fontFamily:'黑体',fontWeight:'bold'})
+                        let center = new BMap.Point(po.lg, po.lat)
+                        that.map.centerAndZoom(center,16)
+                        let marker = new BMap.Marker(center)
+                        that.map.addOverlay(marker)
+                        marker.setLabel(label)
+                        that.selectedPoint2.push(marker)
+//						//窗口显示选中点的相关信息
+//						var content = "设备名称："+po.name+"<br>"+" 横坐标："+po.lg+"<br>" +"纵坐标："+po.lat
+//                         that.openInfo(po.lg, po.lat,content)
+						
+                        // 如果该点type为配变，添加供电区域
+                        if(po.type==='配变'){
+                            // 画户表连线
+                            // 添加供电区域
+							  var dd =[]
+							for (let pp of po.biao) {
+							  var p1  = new BMap.Point(pp.lg, pp.lat)
+							  dd.push(p1)
+							}
+						   var polygon = new BMap.Polygon(dd, {strokeColor: '#3A5FCD', strokeWeight: 1, strokeOpacity: 0.5,fillColor:'#3A5FCD' ,fillOpacity: 0.6})
+							that.map.addOverlay(polygon)
+							that.wjj.push(polygon)
+					
+                        }
+                    }
+                })
+            },
+		 //展示信息窗口
+		  openInfo(x,y,content){
+			  var opts ={
+				  width:200,
+				  height:200,
+				  title:'设备信息',
+				  enableAutoPan:false
+				}
+			  var point =new BMap.Point(x,y)
+			  var infoWindow = new BMap.InfoWindow(content,opts)
+			  this.map.openInfoWindow(infoWindow,point)  // 在地图上加载信息窗口，（窗口的内容，窗口的位置）
+			},
+            // 以区域放大居中
+            drawDist(_dist){
+                this.getDistData(_dist)
+                this.dist = _dist
+                this.flines = []
+                document.getElementById('tabs').style.display ='none'
+                this.map.removeOverlay(this.heatmapOverlay)
+                var that = this
+                if(this.allMarker.length != 0 ){
+                    for(let pp of this.allMarker){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+                if(this.selectedPoint.length != 0){
+                    for (let item of this.selectedPoint) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.selectedLine.length != 0){
+                    for (let item of this.selectedLine) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.selectedPoint2.length != 0){
+                    for (let item of this.selectedPoint2) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.wjj.length != 0){
+                    for (let item of this.wjj) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+				this.onCd2(this.dist)
+
+                    var center =''
+                    switch(_dist){
+                        case "营子区":
+                            var center = new BMap.Point(117.663595, 40.552264)
+                            break
+                        case "双桥区":
+                            var center = new BMap.Point(117.949714, 40.98148)
+                            break
+                        case "双滦区":
+                            var center = new BMap.Point(117.801116,40.96473)
+                            break
+                        case "高新区":
+                            var center = new BMap.Point(118.001196,40.770489)
+                            break
+                    }
+                    this.map.centerAndZoom(center,15)
+                    for (let item of that.point_d) {
+                        if(item.dist === _dist){
+                            var icon = ''
+                            var label = new BMap.Label(item.name, { offset: new BMap.Size(-30, 45) })
+                            var t = ""
+                            if(item.type === '变电站'){
+                                if(item.voltage=== 35){
+                                    icon = new BMap.Icon('./images/cd35.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                }else if(item.voltage===110){
+                                    icon = new BMap.Icon('./images/cd110.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                }else if(item.voltage=== 220){
+                                    icon = new BMap.Icon('./images/cd220.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                }else if(item.voltage===500){
+                                    icon = new BMap.Icon('./images/cd500.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                }
+                                t = item.name.indexOf('变')
+                                label = new BMap.Label(item.name.substr(0,t), { offset: new BMap.Size(-30, 40) })
+                            }else {
+                                switch(item.type){
+                                    case '环网柜':
+                                        icon = new BMap.Icon('./images/hwg.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                        break
+                                    case '开闭站':
+                                        icon = new BMap.Icon('./images/kbz.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                                        break
+                                    case '杆塔':
+                                        icon = ''
+                                        break
+                                    default:
+                                        icon = new BMap.Icon('./images/pb.png', new BMap.Size(113, 72), { fillOpacity: 1, anchor: new BMap.Size(57, 37) })
+                                        break
+                                }
+                            }
+
+                            var p0 = new BMap.Point(item.lg, item.lat)
+                          var m0 = new BMap.Marker(p0, { icon: icon })
+							if(item.type !== '杆塔'){
+								this.map.addOverlay(m0)
+							}
+							this.selectedPoint.push(m0)
+                            item["marker"]=m0
+                            item["isShow"]= 'true'
+                        }
+                    }
+                    //画区域的线
+                var p1,p2
+				var line_color,line_style,line_weight
+                   for(let li of this.line_d){
+                        for(let po of this.point_d){
+                            if(po.id === li.source){
+                                p1 = new BMap.Point(po.lg, po.lat)
+                            } else  if(po.id === li.target){
+                                p2 = new BMap.Point(po.lg, po.lat)
+								if(po.type==='变电站'){
+								  switch(po.voltage){
+									case 220:
+									line_color = 'purple'
+									line_style = 'solid'
+									line_weight = 2
+									  break
+									case 110:
+									  line_color = 'red'
+									  line_style = 'solid'
+									  line_weight = 2
+									  break
+									case 35:
+									  line_color = '#0000EE'
+									  line_style = 'solid'
+									  line_weight = 2
+									  break
+								  }
+								}else{
+								    line_color = '#080808'
+									  line_style = 'solid'
+									  line_weight = 2
+								}
+                            }
+                        }
+                       if(p1&&p2){
+                           var polygon = new BMap.Polyline([p1, p2], {strokeStyle: line_style, strokeColor: line_color, strokeWeight: line_weight, strokeOpacity: 1})
+                           this.map.addOverlay(polygon)
+                           li["line"]=polygon
+                           this.selectedLine.push(polygon)
+                       }
+
+                   }
+                this.showInfo(1);
+            },
+
+            //画整条线路 如 ml512 yd511
+            drawLine(_line){
+                // 先获取线路数据   this.getLineData(_line)
+                this.flines.push(_line)
+                this.getLine(_line)
+                this.getLineData(_line)  // 获取线路数据
+                // 先清理地图上的所选线路的点和连线
+                if(this.allMarker.length != 0 ){
+                    for(let pp of this.allMarker){
+                        this.map.removeOverlay(pp)
+                    }
+                }
+                if(this.selectedPoint.length != 0){
+                    for (let item of this.selectedPoint) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.selectedLine.length != 0){
+                    for (let item of this.selectedLine) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.selectedPoint2.length != 0){
+                    for (let item of this.selectedPoint2) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                if(this.wjj.length != 0){
+                    for (let item of this.wjj) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                //1. 画出该线路上的所有点 包括配变、开闭站、环网柜、杆塔
+                for(let po of this.point_l){
+                    var icon = ''
+                    var label = new BMap.Label(po.name, { offset: new BMap.Size(-30, 45) })
+
+                    if(po.voltage != null){
+                        if(po.voltage=== 35){
+                            icon = new BMap.Icon('./images/cd35.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                        }else if(po.voltage===110){
+                            icon = new BMap.Icon('./images/cd110.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                        }else if(po.voltage=== 220){
+                            icon = new BMap.Icon('./images/cd220.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                        }
+
+
+                    }  else {
+                       switch(po.type){
+                         case '环网柜':
+                           icon = new BMap.Icon('./images/hwg.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           break;
+                         case '开闭站':
+                          icon = new BMap.Icon('./images/kbz.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           break;
+                       case '配电室':
+                           icon = new BMap.Icon('./images/pd.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           break;
+                       case '箱式变电站':
+                           icon = new BMap.Icon('./images/xb.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           break;
+                       case '熔断器':
+                           icon = new BMap.Icon('./images/rdq.png', new BMap.Size(46, 107), { fillOpacity: 1, anchor: new BMap.Size(23, 54) })
+                           break;
+                       case '电缆分接箱':
+                           icon = new BMap.Icon('./images/df.png', new BMap.Size(99, 99), { fillOpacity: 1, anchor: new BMap.Size(50, 50) })
+                           break;
+                       case '杆塔':
+                          icon = new BMap.Icon('./images/gt.png', new BMap.Size(21, 21), { fillOpacity: 1, anchor: new BMap.Size(12, 12) })
+                           break;
+                       case '配变':
+                           icon = new BMap.Icon('./images/pb.png', new BMap.Size(113, 72), { fillOpacity: 1, anchor: new BMap.Size(57, 36) })
+                           break
+                       }
+                     }
+
+                    var p0 = new BMap.Point(po.lg, po.lat)
+                    var m0 = new BMap.Marker(p0, { icon: icon })
+
+                       this.map.addOverlay(m0)
+                        po["marker"]=m0
+
+
+                    po["isShow"]= 'true';
+                    this.selectedPoint.push(m0)
+                }
+
+                // 2. 画出该线路的连线
+                var p1,p2
+
+                for (let li of this.line_l) {
+                        for(let po of this.point_l){
+                            if(po.id === li.source){
+                                p1 = new BMap.Point(po.lg, po.lat)
+                            }
+                            if(po.id === li.target){
+                                p2 = new BMap.Point(po.lg, po.lat)
+                            }
+                        }
+
+                        var polygon = new BMap.Polyline([p1, p2], {strokeColor: '#080808', strokeWeight: 2, strokeOpacity: 1})
+                        this.map.addOverlay(polygon)
+                      li["line"]=polygon
+                        this.selectedLine.push(polygon)
+
+                }
+                this.map.centerAndZoom(p1,16); // 放大居中
+                this.showInfo(1);
+            },
+        getline_s(sp,tp){
+            var x1,y1,x2,y2
+            $.ajax({
+                url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                type: "POST",
+                data: '{"id":"'+sp+'"}',
+                contentType:"application/json",
+                dataType:"json",
+                async:false,
+                success: function(data) {
+                    x1=0.5*data[0].lg
+                    y1=0.5*data[0].lat
+                }
+            })
+            $.ajax({
+                url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
+//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                type: "POST",
+                data: '{"id":"'+tp+'"}',
+                contentType:"application/json",
+                dataType:"json",
+                async:false,
+                success: function(data) {
+                    x2=0.5*data[0].lg
+                    y2=0.5*data[0].lat
+                }
+            })
+            $.ajax({
+                url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
+                type: "POST",
+                data: '{ "source":"'+ sp+'","target":"'+ tp+'"}',  // 通过 id 筛选连线
+                contentType:"application/json",
+                dataType:"json",
+                async:false,
+                success: function(data) {//请求成功完成后要执行的方法
+
+//                        var result = JSON.stringify(data); //json对象转成字符串
+                    that.line_s = data;
+
+                }
+            })
+        },
+            //画一根线段 如 营子-梅岭沟  参数是线段的起始点的id
+            drawLine_s(sp,tp){
+                   this.getline_s(sp,tp)
+                if(this.selectedLine_s.length != 0){
+                    for (let item of this.selectedLine_s) {
+                        this.map.removeOverlay(item)  // 先清理地图上的所选线路
+                    }
+                }
+                var p1,p2
+//
+                for(let po of this.point_d){
+                    if(po.id === sp){
+                        p1 = new BMap.Point(po.lg, po.lat)
+                    }
+                    if(po.id === tp){
+                        p2 = new BMap.Point(po.lg, po.lat)
+                    }
+                    if(p1&&p2){
+                        var polygon = new BMap.Polyline([p1, p2], {strokeColor: 'blue', strokeWeight: 2, strokeOpacity: 1})
+                        this.map.addOverlay(polygon)
+                        this.selectedLine_s.push(polygon)
+                    }
+                }
+                this.map.centerAndZoom(p1,15); // 放大居中
+            },
+            //缩放
+            zoomchange( msg){
+                if(msg === '放大'){
+                    let z =this.map.getZoom()
+                    z = z+2
+                    this.map.setZoom(z)
+                    this.showInfo(1)
+                }else{
+                    let z =this.map.getZoom()
+                    z = z-2
+                    this.map.setZoom(z)
+                    this.showInfo(1)
+                }
+            },
+        }
+    })
+</script>
+<script type="text/javascript">
+    function setLocation( x,y,z) {
+        this.map.centerAndZoom(new BMap.Point(x,y), z);
+    }
+</script>
+</body>
+</html>

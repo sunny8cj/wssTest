@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>线路数据</title>
+    <script src="./js/vue.js"></script>
+    <script src="./js/jquery-3.3.1.js"></script>
+    <script src="./js/echarts.js"></script>
+    <script src="./js/v-chart.js"></script>
+    <script src="./js/element.js"></script>
+    <link rel="stylesheet" href="./css/element.css">
+    <link rel="stylesheet" href="./css/v-chart.css">
+    <style>
+        #app{
+            background: transparent;
+        }
+        #main{
+            background: url("./images/xl.png") no-repeat;
+            width: 3840px;
+            height: 2160px;
+            /*display: flex;*/
+            /*flex-wrap: wrap;*/
+            /*align-content: space-between;*/
+            /*background: transparent;*/
+        }
+        #main2{
+            background: url("./images/bg_pb.png") no-repeat;
+            width: 3840px;
+            height: 2160px;
+            /*background: transparent;*/
+            display: none;
+        }
+   #header{
+       height: 220px;
+   }
+     .flexList{
+         /*width: 3840px;*/
+         flex-basis: 100%;
+         display: flex;
+         /*display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;*/
+         justify-content:space-around;
+         margin-top:10px;
+         margin-left: 10px;
+     }
+        .biaoqian{
+            flex:0 0 45%;
+            /*width: 1611px;*/
+            height:940px;
+        }
+        .biaoqian2{
+            flex:0 0 45%;
+            /*justify-content: space-around;*/
+            /*padding: 100px;*/
+            /*margin-left:100px;*/
+            width: 1611px;
+            height:905px;
+        }
+        .title{
+            color: white;
+            /*height:100px;*/
+            /*padding:5px;*/
+            /*margin: 5px;*/
+            margin-left:30px;
+        }
+        .title2{
+            color: white;
+            /*height:100px;*/
+            /*padding:5px;*/
+            /*margin: 5px;*/
+            /*margin-left:10px;*/
+        }
+        .chart{
+            padding:100px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+   <div id="main">
+       <!--<el-image :src="src" :fit="fit" style="z-index: 1"> </el-image>-->
+       <!--// 头部占位-->
+     <div id="header"></div>
+       <!--// 第一行-->
+   <div class ="flexList">
+        <div class="biaoqian" >
+            <div >
+                <span class="title">负载率</span>
+                <div class="chart">
+                    <ve-line :data="chartData1" :settings="chartSettings" :height="height"></ve-line>
+                </div>
+
+            </div>
+        </div>
+        <div class="biaoqian">
+            <div >
+                <span class="title2">负荷</span>
+                <div class="chart">
+                <ve-line :data="chartData2" :settings="chartSettings" :height="height"></ve-line>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class ="flexList">
+       <div class="biaoqian2" >
+           <div >
+               <span class="title">载流量</span>
+               <div class="chart">
+               <ve-line :data="chartData3" :settings="chartSettings" :height="height"></ve-line>
+                   </div>
+           </div>
+       </div>
+       <div class="biaoqian2">
+           <div >
+               <span class="title2">负荷</span>
+               <div class="chart">
+               <ve-line :data="chartData1" :settings="chartSettings" :height="height"></ve-line>
+                   </div>
+           </div>
+       </div>
+    </div>
+  </div>
+
+    <!--//配变-->
+    <div id="main2">
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    var vm = new Vue({
+        el: '#app',
+        data(){
+            this.chartSettings = {
+                area:true,
+                xAxis:[{
+                    axisLine:{
+                        color:'#ffffff'
+                    }
+                }],
+                yAxis:[
+                    {
+                        textType:{
+                            color:'#ffffff'
+                        }
+                    }
+                ]
+
+            }
+            return{
+                src:'./images/xl.png',
+                fit:  'contain',
+                src1:'./images/biaoqian.png',
+                lineData: {
+                    columns: ['key', 'value'],
+                    rows: [
+                        {'key': '1月1日', 'value': 123},
+                        {'key': '1月2日', 'value': 1223},
+                        {'key': '1月3日', 'value': 2123},
+                        {'key': '1月4日', 'value': 4123},
+                        {'key': '1月5日', 'value': 3123},
+                        {'key': '1月6日', 'value': 7123}
+                    ]
+                },
+                chartData1: {
+                    columns: ['key', 'value'],
+                    rows: [
+                        {'key': '1月1日', 'value': 123},
+                        {'key': '1月2日', 'value': 1223},
+                        {'key': '1月3日', 'value': 2123},
+                        {'key': '1月4日', 'value': 4123},
+                        {'key': '1月5日', 'value': 3123},
+                        {'key': '1月6日', 'value': 7123}
+                    ]
+                },
+                chartData2: {
+                    columns: ['key', 'value'],
+                    rows: [
+                        {'key': '1月1日', 'value': 123},
+                        {'key': '1月2日', 'value': 1223},
+                        {'key': '1月3日', 'value': 2123},
+                        {'key': '1月4日', 'value': 4123},
+                        {'key': '1月5日', 'value': 3123},
+                        {'key': '1月6日', 'value': 7123}
+                    ]
+                },
+                chartData3: {
+                    columns: ['key', 'value'],
+                    rows: [
+                        {'key': '1月1日', 'value': 123},
+                        {'key': '1月2日', 'value': 1223},
+                        {'key': '1月3日', 'value': 2123},
+                        {'key': '1月4日', 'value': 4123},
+                        {'key': '1月5日', 'value': 3123},
+                        {'key': '1月6日', 'value': 7123}
+                    ]
+                },
+                height:'600px',
+                xl:{
+                    feederName:'我是测试数据', // 线路名称
+                    dmsTransCount:'23', // 所带配变数
+                    dmsSectionCount: '4', //分支数
+                    ratedCurrent: '879',  //容量
+                    activePower: 'gag', //实时负荷
+                    lineLength: '122',  // 线路长度
+                    currentLoading:'rywy',  // 实时负载率
+                    currentLoadingHis: [] ,//负载率
+                    activePowerHis: [], //历史负荷
+                    ratedCurrentHis: [] // 载流量
+                },
+
+            }
+
+        },
+        mounted() {
+            this.init()
+        },
+        methods: {
+          init(){
+//              this.getLineData('nj514')
+//              this.showDlg("设备")
+          },
+            showDlg(value){
+              if(value === "设备"){
+                  document.getElementById('main').style.display = 'none'
+                  document.getElementById('main2').style.display = 'block'
+              }else if(value === "线路"){
+                  document.getElementById('main').style.display = 'block'
+                  document.getElementById('main2').style.display = 'none'
+              }
+            },
+          getLineData(value){
+              var that =this
+              $.ajax({
+                  url:"http://127.0.0.1:8089/index/getLineInfo",
+                  type: "POST",
+                  data: '{"fline":"'+value+'"}',
+                  contentType:"application/json",
+                  dataType:"json",
+                  async:false,
+                  success: function (response) {
+                      console.log(response)
+                      that.xl =response
+                      that.chartData1.rows = that.xl.currentLoadingHis
+                      that.chartData2.rows = that.xl.activePowerHis
+                      that.chartData3.rows = that.xl.ratedCurrentHis
+                  }
+              })
+
+          }
+        }
+    })
+</script>
+
+</body>
+</html>
