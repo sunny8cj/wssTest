@@ -36,14 +36,15 @@
         #wss {
             position: absolute;
             left: 20px;
-            top: 100px;
+            top: 20px;
             font-size: 26px;
         }
 #tabs{
     background: cadetblue;
-    width: 300px;
-    height: 800px;
-    font-size: 26px;
+    width: 500px;
+    height: 1000px;
+    font-size: 24px;
+    font-weight: 700;
     display: none;
 /*color:white;*/
 }
@@ -65,16 +66,17 @@ span{
 <div id="app">
     <div id="map_demo" ref="allmap"></div>
     <div id="bt">
-        <button  style="float:left;" @click="drawDist('营子区')">营子区</button>
+        <!--<button  style="float:left;" @click="drawDist('营子区')">营子区</button>-->
         <!--<button  style="float:left;" @click="drawDist('双桥区')">双桥区</button>-->
         <!--<button  style="float:left;" @click="heatMap('负载率')">负载率热力图</button>-->
         <!--<button  style="float:left;" @click="drawScope('my513')">my513</button>-->
-        <button  style="float:left;" @click="drawLine('nj514')">nj514</button>
-        <button  style="float:left;" @click="drawLine('my513')">my513</button>
+        <!--<button  style="float:left;" @click="drawLine('nj514')">nj514</button>-->
+        <!--<button  style="float:left;" @click="drawLine('my513')">my513</button>-->
         <!--&lt;!&ndash;<button  style="float:left;" @click="drawLine('yd511')">yd511</button>&ndash;&gt;-->
         <!--<button  style="float:left;" @click=" drawCD()">承德市</button>-->
-        <button  style="float:left;" @click=" drawPoint(110674000000008)">设备点1</button>
-        <button  style="float:left;" @click=" drawPoint(110681500000007)">设备点2</button>
+        <!--<button  style="float:left;" @click=" drawPoint(110674000000008)">设备点1</button>-->
+        <button  style="float:left;" @click=" drawPoint(150677000000003)">设备点2</button>
+        <!--<button  style="float:left;" @click="activeName = 'second'">运行数据</button>-->
         <!--<button  style="float:left;" @click="zoomIn()">放大</button>-->
         <!--<button  style="float:left;" @click="showInfo(1)">自动</button>-->
         <!--<button  style="float:left;" @click="addCheckbox('110')">110</button>-->
@@ -89,120 +91,167 @@ span{
         <el-tabs v-model="activeName" type="card" id="tabs">
             <el-tab-pane label="基础数据" name="first" >
                 <div v-if="type==='变电站'">
-                    <span>资产单位 :{{bdz.asset_units}} </span><br>
-                    <span>电站名称 :{{bdz.name_power_station}} </span><br>
-                    <span>纬度:{{bdz.latitude}} </span><br>
-                    <span>经度:{{bdz.longitude}} </span><br>
-                    <span>设备编码:{{bdz.equipment_coding}} </span><br>
-                    <span>运维单位 :{{bdz.operations_maintenance_units}} </span><br>
-                    <span>电压等级 :{{bdz.voltage_level}} </span><br>
-                    <span>站址 :{{bdz.site}} </span><br>
-                    <span>投运日期 :{{bdz.date_commissioning}} </span><br>
-                    <span>设备主人 :{{bdz.equipment_owner}} </span><br>
-                    <span>所属地市 :{{bdz.subordinate_municipalities}} </span><br>
+                    资产性质:{{this.bdz.nature_assets}} <br>
+                    经度:{{this.bdz.longitude}} <br>
+                    纬度:{{this.bdz.latitude}} <br>
+                    电站名称:{{this.bdz.name_of_power_station}} <br>
+                    运维单位:{{this.bdz.operational_maintenance}} <br>
+                    电压等级:{{this.bdz.voltage_level}} <br>
+                    投运日期:{{this.bdz.date_commissioning}} <br>
+                    是否智能变电站:{{this.bdz.is_intelligent_substation}} <br>
+                    电站重要级别:{{this.bdz.important_power_station}} <br>
+                    是否农网:{{this.bdz.is_farm_network}} <br>
+                    布置方式:{{this.bdz.layout_mode}} <br>
+                    站址:{{this.bdz.xxh}} <br>
+                    建筑面积(m*m):{{this.bdz.building_area}} <br>
+                    地区特征:{{this.bdz.regional_characteristics}} <br>
+                    联系电话:{{this.bdz.contact_number}} <br>
+                    工程名称:{{this.bdz.project_name}} <br>
+                    施工单位:{{this.bdz.construction_unit}} <br>
+                    功能位置编码:{{this.bdz.functional_location_coding}} <br>
+                    消防验收情况:{{this.bdz.fire_acceptance}} <br>
+                    设备主人:{{this.bdz.equipment_owner}} <br>
+                    是否负荷站:{{this.bdz.whether_load_station}} <br>
+                    容量(MVA):{{this.bdz.capacity}} <br>
+                    资产单位:{{this.bdz.asset_unit}} <br>
+                    所属地市:{{this.bdz.subordinate_prefectures}} <br>
+                    维护班组:{{this.bdz.maintenance_team}} <br>
+                    设备状态:{{this.bdz.equipment_status}} <br>
+                    电站类型:{{this.bdz.types_of_power_plants}} <br>
+                    是否枢纽站:{{this.bdz.is_hub_station}} <br>
+                    是否代维:{{this.bdz.is_daiwei}} <br>
+                    值班方式:{{this.bdz.duty_mode}} <br>
+                    污秽等级:{{this.bdz.contamination_grade}} <br>
+                    占地面积(m*m):{{this.bdz.coverage}} <br>
+                    海拔(m):{{this.bdz.elevation}} <br>
+                    退役日期:{{this.bdz.retirement_date}} <br>
+                    工程编号:{{this.bdz.engineering_number}} <br>
+                    设计单位:{{this.bdz.design_unit}} <br>
+                    监理单位:{{this.bdz.construction_control}} <br>
+                    是否GIS变电站:{{this.bdz.whether_gis_substation}} <br>
+                    消防类型:{{this.bdz.fire_fighting_types}} <br>
+                    专业分类:{{this.bdz.professional_classification}} <br>
+                    供电区域 :{{this.bdz.power_supply_area}} <br>
                 </div>
                 <div v-else-if="type==='电缆分接箱'">
-                    电缆分接箱名称：{{xl.feederName}}<br>
-                    所带配变数: {{xl.dmsSectionCount}}<br>
-                    分支数: {{xl.dmsSectionCount}}<br>
+                    资产性质:{{this.df.nature_assets}}<br>
+                    经度:{{this.df.longitude}}<br>
+                    纬度:{{this.df.latitude}}<br>
+                    工程编号:{{this.df.engineering_number}}<br>
+                    工程名称:{{this.df.project_name}}<br>
+                    实物ID:{{this.df.physical_id}}<br>
+                    设备名称:{{this.df.name_of_device}}<br>
+                    所属地市:{{this.df.subordinate_prefectures}}<br>
+                    维护班组:{{this.df.maintenance_team}}<br>
+                    设备状态:{{this.df.equipment_status}}<br>
+                    是否代维:{{this.df.is_daiwei}}<br>
+                    型号:{{this.df.model}}<br>
+                    出厂编号:{{this.df.exit_number}}<br>
+                    投运日期:{{this.df.date_of_commissioning}}<br>
+                    站址:{{this.df.xxh}}<br>
+                    重要程度:{{this.df.importance}}<br>
+                    专业分类:{{this.df.professional_classific}}<br>
+                    功能位置编码:{{this.df.location_coding}}<br>
+                    资产单位:{{this.df.asset_unit}}<br>
+                    资产编号:{{this.df.asset_number}}<br>
+                    设备增加方式:{{this.df.equipment_increase_mode}}<br>
+                    运行编号:{{this.df.operation_number}}<br>
+                    运维单位:{{this.df.maintenance_units}}<br>
+                    电压等级:{{this.df.voltage_level}}<br>
+                    是否农网:{{this.df.is_farm_network}}<br>
+                    类型:{{this.df.type}}<br>
+                    生产厂家:{{this.df.manufacturer}}<br>
+                    出厂日期:{{this.df.date_of_production}}<br>
+                    接地电阻(Ω):{{this.df.grounding_resistance}}<br>
+                    地区特征:{{this.df.regional_char}}<br>
+                    设备主人:{{this.df.equipment_owner}}<br>
+                    供电区域:{{this.df.power_supply_area}}<br>
                 </div>
                 <div v-else-if="type==='开闭站'">
-                    开闭站名称：{{xl.feederName}}<br>
-                    所带配变数: {{xl.dmsSectionCount}}<br>
-                    分支数: {{xl.dmsSectionCount}}<br>
+                    资产性质:{{this.kbz.Nature_assets}}<br>
+                    开闭站电站名称:{{this.kbz.Name_power_station}}<br>
+                    经度:{{this.kbz.longitude}}<br>
+                    纬度:{{this.kbz.latitude}}<br>
+                    所属地市:{{this.kbz.Subordinate}}<br>
+                    维护班组:{{this.kbz.Maintenance_team}}<br>
+                    设备状态:{{this.kbz.Equipment_status}}<br>
+                    电站类型:{{this.kbz.Types_of_power_plants}}<br>
+                    是否代维:{{this.kbz.Is_Daiwei}}<br>
+                    布置方式:{{this.kbz.Layout_mode}}<br>
+                    占地面积(m*m):{{this.kbz.Coverage}}<br>
+                    海拔(m):{{this.kbz.Elevation}}<br>
+                    是否GIS变电站:{{this.kbz.GIS_Substation}}<br>
+                    值班方式:{{this.kbz.Duty_mode}}<br>
+                    备用进出线间隔数:{{this.kbz.Spacing_between_Lines}}<br>
+                    污秽等级:{{this.kbz.Contamination_Grade}}<br>
+                    功能位置编码:{{this.kbz.Functional_Location_Coding}}<br>
+                    资产单位:{{this.kbz.Asset_unit}}<br>
+                    运行编号:{{this.kbz.Operational_Number}}<br>
+                    运维单位:{{this.kbz.Maintenance_Units}}<br>
+                    电压等级:{{this.kbz.Voltage_level}}<br>
+                    投运日期:{{this.kbz.Date_of_commissioning}}<br>
+                    防误方式:{{this.kbz.Ways_to_prevent_mistakes}}<br>
+                    是否农网:{{this.kbz.Is_it_a_farm_network}}<br>
+                    站址:{{this.kbz.xxh}}<br>
+                    建筑面积(m*m):{{this.kbz.Building_area}}<br>
+                    地区特征:{{this.kbz.Regional_characteristics}}<br>
+                    专业分类:{{this.kbz.Professional_classification}}<br>
+                    重要程度:{{this.kbz.Importance}}<br>
+                    供电区域 :{{this.kbz.Power_supply_area}}<br>
                 </div>
                 <div v-else-if="type==='线路'">
                     线路名称：{{xl.feederName}}<br>
-                    分支数: {{xl.dmsSectionCount}}<br>
+                    所带配变数:{{xl.dmsSectionCount}}<br>
+                    分支数:{{xl.dmsSectionCount}}<br>
+                    容量:{{xl.ratedCurrent}}<br>
+                    线路长度:{{xl.lineLength}}<br>
+                    实时负荷:{{xl.activePower}}<br>
+                    实时负载率:{{xl.currentLoading}}<br>
                 </div>
             </el-tab-pane>
             <el-tab-pane label="运行数据" name="second">
                 <div v-if="type==='变电站'">
-                    有功发电
-                    <br>
-                    无功发电
-                    <br>
-                    有功负荷
-                    <br>
-                    无功负荷
-                    <br>
-                    有功损耗
-                    <br>
-                    无功损耗
-                    <br>
-                    有功厂用电
-                    <br>
-                    无功厂用电
-                    <br>
-                    电容器无功
-                    <br>
-                    电抗器无功
-                    <br>
-                    正时段备用
-                    <br>
-                    负时段备用
-                    <br>
-                    低压电抗投入容量
-                    <br>
-                    高压电抗投入容量
-                    <br>
-                    低压电容投入容量
-                    <br>
-                    厂站最大可调出力
-                    <br>
-                    厂站最小可调出力
-                    <br>
-                    额定容量
                 </div>
-                <!--<div v-else-if="type==='熔断器'">-->
-
-                <!--</div>-->
+                <div v-else-if="type==='电缆分接箱'">
+                </div>
                 <div v-else-if="type==='开闭站'">
-                    开闭站名称：{{xl.feederName}}<br>
-                    容量: {{xl.ratedCurrent}}
-                    <br>
-                    实时负荷: {{xl.activePower}}
-                    <br>
-                    实时负载率: {{xl.currentLoading}}
                 </div>
                 <div v-else-if="type==='线路'">
-                    线路名称：{{xl.feederName}}<br>
-                    容量: {{xl.ratedCurrent}}
-                    <br>
-                    实时负荷: {{xl.activePower}}
-                    <br>
-                    实时负载率: {{xl.currentLoading}}
                 </div>
             </el-tab-pane>
             <el-tab-pane label="其他数据" name="third">
                 <div v-if="type==='变电站'">
-                    资产性质
-                    <br>
-                    是否智能变电站 
-                    <br>
-                    电站重要级别 
-                    <br>
-                    建筑面积(m*m)
-                    <br>
-                    地区特征 
-                    <br>
-                    维护班组 
-                    <br>
-                    电站类型
-                    <br>
-                    是否枢纽站
-                    <br>
-                    是否代维 
-                    <br>
-                    电站简称
-                    <br>
-                    发布状态 
-                    <br>
-                    登记时间 
-                    <br>
-                    退役日期 
-                    <br>
-                    供电区域 
+                    电站简称:{{this.bdz.abbr_name}} <br>
+                    是否满足N-1:{{this.bdz.is_n_1}} <br>
+                    是否接入故障信息远传系统:{{this.bdz.can_access_tele_system}} <br>
+                    设备编码:{{this.bdz.equipment_coding}} <br>
+                    最高调度管辖权:{{this.bdz.dispatching_jurisdiction}} <br>
+                    是否接入AVC:{{this.bdz.access_to_avc}} <br>
+                    是否集中监控:{{this.bdz.is_centralize_monitoring}} <br>
+                    登记时间:{{this.bdz.registration_time}} <br>
+                    发布状态:{{this.bdz.publication_status}} <br>
+                    备注 :{{this.bdz.remarks}} <br>
+                </div>
+                <div v-else-if="type==='电缆分接箱'">
+                    设备编码:{{this.df.equipment_coding}}<br>
+                    登记时间:{{this.df.registration_time}}<br>
+                    发布状态:{{this.df.publication_status}}<br>
+                    备注 :{{this.df.remarks}}<br>
+                </div>
+                <div v-else-if="type==='开闭站'">
+                    电站简称:{{this.kbz.abbr_name}}<br>
+                    是否满足N-1:{{this.kbz.is_n_1}}<br>
+                    是否接入故障信息远传系统:{{this.kbz.can_access_tele_system}}<br>
+                    电站ID:{{this.kbz.station_id}}<br>
+                    设备编码:{{this.kbz.equipment_coding}}<br>
+                    发布状态:{{this.kbz.publication_status}}<br>
+                    最高调度管辖权:{{this.kbz.supreme_dispatching}}<br>
+                    是否接入AVC:{{this.kbz.access_to_avc}}<br>
+                    是否集中监控:{{this.kbz.is_centralize_monitor}}<br>
+                    登记时间:{{this.kbz.registration_time}}<br>
+                    备注 :{{this.kbz.remarks}}<br>
+                </div>
+                <div v-else-if="type==='线路'">
                 </div>
             </el-tab-pane>
         </el-tabs>
@@ -217,50 +266,165 @@ span{
         el: '#app',
         data:{
             msg:'nihao',
+            sb_data:{
+                "bdz":[
+                    {"id":110677000000003,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9646359","latitude":"40.93665088","name_of_power_station":"南郊变电站","operational_maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流110kV","date_commissioning":"1992-11-21","is_intelligent_substation":"否","important_power_station":"四类变电站","is_farm_network":"否","layout_mode":"常规","xxh":"河北省承德市双桥区开发区雹神庙村","building_area":"8004.000","regional_characteristics":"市区","contact_number":"","project_name":"","construction_unit":"","functional_location_coding":"01-DEA0-S-30012","fire_acceptance":"","equipment_owner":"","whether_load_station":"","capacity":"100","asset_unit":"国网冀北电力有限公司","subordinate_prefectures":"国网承德供电公司","maintenance_team":"变电运维一班","equipment_status":"在运","types_of_power_plants":"变电站","is_hub_station":"否","is_daiwei":"否","duty_mode":"无人值班","contamination_grade":"a级","coverage":"8004.000","elevation":"","retirement_date":"","engineering_number":"","design_unit":"","construction_control":"","whether_gis_substation":"否","fire_fighting_types":"","professional_classification":"变电","power_supply_area":"","abbr_name":"","is_n_1":"","can_access_tele_system":"","equipment_coding":"01M10000001117639","dispatching_jurisdiction":"承德地调","access_to_avc":"","is_centralize_monitoring":"","registration_time":"1992-11-26","publication_status":"发布","remarks":""},
+
+                ],
+                "kbz":
+                    [
+                        {"id":150677000000003,"Nature_assets":"省（直辖市、自治区）公司","Name_power_station":"师专开闭站","longitude":"117.9638649","latitude":"40.89529603","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"1","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40840","Asset_unit":"国网冀北电力有限公司","Operational_Number":"622","Maintenance_Units":"国网承德供电公司运维检修部(检修分公司)","Voltage_level":"交流10kV","Date_of_commissioning":"2010-07-16","Ways_to_prevent_mistakes":"","Is_it_a_farm_network":"否","xxh":"承德民族师范学院南门东侧","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-57099","equipment_coding":"01M00000006350467","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
+                        {"id":150670000000053,"Nature_assets":"省（直辖市、自治区）公司","Name_power_station":"4#开闭站","longitude":"117.9740976","latitude":"40.8924625","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"1","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40717","Asset_unit":"国网冀北电力有限公司","Operational_Number":"627","Maintenance_Units":"国网承德供电公司运维检修部(检修分公司)","Voltage_level":"交流10kV","Date_of_commissioning":"2009-08-01","Ways_to_prevent_mistakes":"机械闭锁","Is_it_a_farm_network":"否","xxh":"郭营子村内","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-56824","equipment_coding":"01M00000006350289","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
+                        {"id":150677000000004,"Nature_assets":"省（直辖市、自治区）公司","Name_power_station":"石油开闭站","longitude":"117.9653059","latitude":"40.90312325","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40856","Asset_unit":"国网冀北电力有限公司","Operational_Number":"601","Maintenance_Units":"国网承德供电公司运维检修部(检修分公司)","Voltage_level":"交流10kV","Date_of_commissioning":"2007-08-01","Ways_to_prevent_mistakes":"","Is_it_a_farm_network":"否","xxh":"开发区大学城附近","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-57369","equipment_coding":"01M00000006350637","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
+
+                    ],
+                "df":
+                    [
+                        {"id":200677000000008,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.959401","latitude":"40.90416272","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路1#","subordinate_prefectures":"国网承德供电公司","maintenance_team":"高新区配电运检班","equipment_status":"在运","is_daiwei":"否","model":"DF4-600","exit_number":"","date_of_commissioning":"1991-08-24","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40690","asset_unit":"国网冀北电力有限公司","asset_number":"160200024853","equipment_increase_mode":"","operation_number":"N514-FZX-SY03","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京清畅电力技术股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006521477","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
+                        {"id":200677000000009,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9633239","latitude":"40.93079041","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路2#电缆接线箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40692","asset_unit":"国网冀北电力有限公司","asset_number":"160200014675","equipment_increase_mode":"","operation_number":"N514-FZX01","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445861","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000010,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9614118","latitude":"40.92646686","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路3#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40693","asset_unit":"国网冀北电力有限公司","asset_number":"160200014676","equipment_increase_mode":"","operation_number":"N514-FZX02","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445881","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000011,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9597811","latitude":"40.92284059","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路4#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40694","asset_unit":"国网冀北电力有限公司","asset_number":"160200014677","equipment_increase_mode":"","operation_number":"N514-FZX03","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445895","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000012,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9735249","latitude":"40.89700171","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路4#箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"DF4-600","exit_number":"","date_of_commissioning":"2004-08-24","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40695","asset_unit":"国网冀北电力有限公司","asset_number":"160200014678","equipment_increase_mode":"","operation_number":"N514-FZX-SY04","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京清畅电力技术股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006521764","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
+                        {"id":200677000000013,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9573629","latitude":"40.91666452","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路5#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40696","asset_unit":"国网冀北电力有限公司","asset_number":"160200014679","equipment_increase_mode":"","operation_number":"N514-FZX04","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445907","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000014,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9563272","latitude":"40.911873","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路6#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40697","asset_unit":"国网冀北电力有限公司","asset_number":"160200014680","equipment_increase_mode":"","operation_number":"N514-FZX05","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006446189","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000015,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9563272","latitude":"40.911873","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路6#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40697","asset_unit":"国网冀北电力有限公司","asset_number":"160200014680","equipment_increase_mode":"","operation_number":"N514-FZX05","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006522016","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
+                        {"id":200677000000016,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9608536","latitude":"40.9101937","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路7#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40640","asset_unit":"国网冀北电力有限公司","asset_number":"160200014490","equipment_increase_mode":"","operation_number":"N514-FZX06","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006446208","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+
+                    ]
+            },
             bdz:{
-                asset_units:4,
-                name_power_station:null,
-                latitude:null,
+                nature_assets:null,
                 longitude:null,
-                equipment_coding:null,
-                operations_maintenance_units:null,
+                latitude:null,
+                name_of_power_station:null,
+                operational_maintenance:null,
                 voltage_level:null,
-                site:null,
                 date_commissioning:null,
-                equipment_owner:null,
-                subordinate_municipalities:null,
-                active_power_generation:null,
-                reactive_power_generation:null,
-                active_load:null,
-                reactive_load:null,
-                active_power_loss:null,
-                reactive_power_loss:null,
-                active_auxiliary_power_supply:null,
-                reactive_power_supply:null,
-                capacitor_reactive_power:null,
-                reactor_reactive_power:null,
-                timing_standby:null,
-                negative_period_reserve:null,
-                low_vol_reactance_capacity:null,
-                high_vol_reactance_capacity:null,
-                low_voltage_capacitor:null,
-                maximum_adjustable_output:null,
-                minimum_adjustable_output:null,
-                rated_capacity:null,
-                nature_of_assets:null,
-                is_smart_substation:null,
-                power_plant_important_level:null,
+                is_intelligent_substation:null,
+                important_power_station:null,
+                is_farm_network:null,
+                layout_mode:null,
+                xxh:null,
                 building_area:null,
                 regional_characteristics:null,
+                contact_number:null,
+                project_name:null,
+                construction_unit:null,
+                functional_location_coding:null,
+                fire_acceptance:null,
+                equipment_owner:null,
+                whether_load_station:null,
+                capacity:null,
+                asset_unit:null,
+                subordinate_prefectures:null,
                 maintenance_team:null,
+                equipment_status:null,
                 types_of_power_plants:null,
                 is_hub_station:null,
                 is_daiwei:null,
-                abbreviation_power_station:null,
-                release_status:null,
-                registration_time:null,
+                duty_mode:null,
+                contamination_grade:null,
+                coverage:null,
+                elevation:null,
                 retirement_date:null,
-                power_supply_area:null
+                engineering_number:null,
+                design_unit:null,
+                construction_control:null,
+                whether_gis_substation:null,
+                fire_fighting_types:null,
+                professional_classificatio:null,
+                power_supply_area:null,
+                abbr_name:null,
+                is_n_1:null,
+                can_access_tele_system:null,
+                equipment_coding:null,
+                dispatching_jurisdiction:null,
+                access_to_avc:null,
+                is_centralize_monitoring:null,
+                registration_time:null,
+                publication_status:null,
+                remarks:null,
+            },
+            kbz:{
+                Nature_assets:'1',
+                Name_power_station:'2',
+                longitude:'3',
+                latitude:null,
+                Subordinate:null,
+                Maintenance_team:null,
+                Equipment_status:null,
+                Types_of_power_plants:null,
+                Is_Daiwei:null,
+                Layout_mode:null,
+                Coverage:null,
+                Elevation:null,
+                GIS_Substation:null,
+                Duty_mode:null,
+                Spacing_between_Lines:null,
+                Contamination_Grade:null,
+                Functional_Location_Coding:null,
+                Asset_unit:null,
+                Operational_Number:null,
+                Maintenance_Units:null,
+                Voltage_level:null,
+                Date_of_commissioning:null,
+                Ways_to_prevent_mistakes:null,
+                Is_it_a_farm_network:null,
+                xxh:null,
+                Building_area:null,
+                Regional_characteristics:null,
+                Professional_classification:null,
+                Importance:null,
+                Power_supply_area:null,
+                abbr_name:null,
+                is_n_1:null,
+                can_access_tele_system:null,
+                station_id:null,
+                equipment_coding:null,
+                publication_status:null,
+                supreme_dispatching:null,
+                access_to_avc:null,
+                is_centralize_monitor:null,
+                registration_time:null,
+                remarks:null
+            },
+            df:{
+                nature_assets:null,
+                longitude:null,
+                latitude:null,
+                engineering_number:null,
+                project_name:null,
+                physical_id:null,
+                name_of_device:null,
+                subordinate_prefectures:null,
+                maintenance_team:null,
+                equipment_status:null,
+                is_daiwei:null,
+                model:null,
+                exit_number:null,
+                date_of_commissioning:null,
+                xxh:null,
+                importance:null,
+                professional_classific:null,
+                location_coding:null,
+                asset_unit:null,
+                asset_number:null,
+                equipment_increase_mode:null,
+                operation_number:null,
+                maintenance_units:null,
+                voltage_level:null,
+                is_farm_network:null,
+                type:null,
+                manufacturer:null,
+                date_of_production:null,
+                grounding_resistance:null,
+                regional_char:null,
+                equipment_owner:null,
+                power_supply_area:null,
+                equipment_coding:null,
+                registration_time:null,
+                publication_status:null,
+                remarks:null
             },
             xl:{
                 feederName:'我是测试数据', // 线路名称
@@ -327,6 +491,9 @@ span{
             },
             setLocation( x,y,z) {
                 this.map.centerAndZoom(new BMap.Point(x,y), z);
+            },
+            checkData(value){
+                this.activeName = value
             },
             zoomIn(){
                // this.map.zoomIn()
@@ -497,24 +664,24 @@ span{
                 for (let item of this.point_bdz) {
                     var icon = ''
                     if (item.voltage === 35) {
-                        icon = new BMap.Icon('./images/cd35.png', new BMap.Size(50, 50), {
+                        icon = new BMap.Icon('./images/cd35.png', new BMap.Size(70, 70), {
                             fillOpacity: 0.5,
-                            anchor: new BMap.Size(25, 25)
+                            anchor: new BMap.Size(35, 35)
                         })
                     } else if (item.voltage === 110) {
-                        icon = new BMap.Icon('./images/cd110.png', new BMap.Size(50, 50), {
+                        icon = new BMap.Icon('./images/cd110.png', new BMap.Size(70, 70), {
                             fillOpacity: 0.5,
-                            anchor: new BMap.Size(25, 25)
+                            anchor: new BMap.Size(35, 35)
                         })
                     } else if (item.voltage === 220) {
-                        icon = new BMap.Icon('./images/cd220.png', new BMap.Size(50, 50), {
+                        icon = new BMap.Icon('./images/cd220.png', new BMap.Size(70, 70), {
                             fillOpacity: 0.5,
-                            anchor: new BMap.Size(25, 25)
+                            anchor: new BMap.Size(35, 35)
                         })
                     } else if (item.voltage === 500) {
-                        icon = new BMap.Icon('./images/cd500.png', new BMap.Size(50, 50), {
+                        icon = new BMap.Icon('./images/cd500.png', new BMap.Size(70, 70), {
                             fillOpacity: 0.5,
-                            anchor: new BMap.Size(25, 25)
+                            anchor: new BMap.Size(35, 35)
                         })
                     }
                     // var n0 = new BMap.Icon('../cd/static/bdmap/images/n0.png', new BMap.Size(33, 34), { fillOpacity: 0.5, anchor: new BMap.Size(16, 17) })
@@ -840,7 +1007,7 @@ span{
                 let map = new BMap.Map(this.$refs.allmap)
 //                let map = new BMap.Map('map_demo')
                 this.map = map
-//                map.centerAndZoom(new BMap.Point(117.585671, 41.422625), 9)
+//                map.centerAndZoom(new BMap.Point(117.585671, 41.422635), 9)
                 var point = new BMap.Point(117.418261, 39.921984);
                 map.centerAndZoom(point,9);
                 map.enableScrollWheelZoom(true)
@@ -999,7 +1166,8 @@ span{
 //                        var result = JSON.stringify(data); //json对象转成字符串
 //                        that.point = data;
                         let po =data[0]
-                        that.type = po.type
+                        that.type = po.type //获取当前数据类型
+
                         let label = new BMap.Label(po.name, { offset: new BMap.Size(-50, 70) })
                         label.setStyle({borderColor: '#4682B4',borderWidth:'4px',borderStyle:'double',fontSize:'20px',fontFamily:'黑体',fontWeight:'bold'})
                         let center = new BMap.Point(po.lg, po.lat)
@@ -1028,22 +1196,35 @@ span{
                         }
                     }
                 })
-                //展示设备数据
 
-              //  getPointData(_point)
-                $.ajax({
-                    url: "http://127.0.0.1:8089/web/map/queryPoint",// 按条件筛选设备的接口
-//                    url: "http://127.0.0.1:8089/web/map/queryLine",// 按条件筛选线路的接口
-                    type: "POST",
-                    data: '{"id":"'+_point+'"}',
-                    contentType:"application/json",
-                    dataType:"json",
-                    async:true,  // 异步请求
-                    success: function(data) {//请求成功完成后要执行的方法
+              that.getSbData(_point)
+            },
+            getSbData(_point){
 
-                    }
-                })
-
+                switch (this.type){
+                    case '变电站':
+                        this.sb_data.bdz.filter(item =>{
+                            if(item.id === _point){
+                                this.bdz = item
+                            }
+                        })
+                        break
+                    case '开闭站':
+                        this.sb_data.kbz.filter(item =>{
+                            if(item.id == _point){
+                                this.kbz = item
+                            }
+                        })
+                        break
+                    case '电缆分接箱':
+                        this.sb_data.df.filter(item =>{
+                            if(item.id === _point){
+                                this.df =  item
+                            }
+                        })
+                        break
+                }
+                console.log(this.kbz)
             },
 		 //展示信息窗口
 		  openInfo(x,y,content){
@@ -1115,29 +1296,29 @@ span{
                             var t = ""
                             if(item.type === '变电站'){
                                 if(item.voltage=== 35){
-                                    icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/35.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                                 }else if(item.voltage===110){
-                                    icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/110.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                                 }else if(item.voltage=== 220){
-                                    icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/220.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                                 }else if(item.voltage===500){
-                                    icon = new BMap.Icon('./images/500.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                                    icon = new BMap.Icon('./images/500.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                                 }
                                 t = item.name.indexOf('变')
                                 label = new BMap.Label(item.name.substr(0,t), { offset: new BMap.Size(-30, 40) })
                             }else {
                                 switch(item.type){
                                     case '环网柜':
-                                        icon = new BMap.Icon('./images/hwg.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                                        icon = new BMap.Icon('./images/hwg.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                                         break
                                     case '开闭站':
-                                        icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                                        icon = new BMap.Icon('./images/kbz.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                                         break
                                     case '杆塔':
                                         icon = ''
                                         break
                                     default:
-                                        icon = new BMap.Icon('./images/pb.png', new BMap.Size(113, 72), { fillOpacity: 0.5, anchor: new BMap.Size(57, 37) })
+                                        icon = new BMap.Icon('./images/pb.png', new BMap.Size(70, 44), { fillOpacity: 0.5, anchor: new BMap.Size(35, 22) })
                                         break
                                 }
                             }
@@ -1240,38 +1421,38 @@ span{
                     var label = new BMap.Label(po.name, { offset: new BMap.Size(-30, 45) })
                     if(po.voltage !== null){
                         if(po.voltage=== 35){
-                            icon = new BMap.Icon('./images/35.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                            icon = new BMap.Icon('./images/35.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                         }else if(po.voltage===110){
-                            icon = new BMap.Icon('./images/110.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                            icon = new BMap.Icon('./images/110.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                         }else if(po.voltage=== 220){
-                            icon = new BMap.Icon('./images/220.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                            icon = new BMap.Icon('./images/220.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                         }
                     }  else {
                         console.log(po.type)
                        switch(po.type){
                          case '环网柜':
-                           icon = new BMap.Icon('./images/hwg.png', new BMap.Size(25, 25), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                           icon = new BMap.Icon('./images/hwg.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                            break;
                          case '开闭站':
-                          icon = new BMap.Icon('./images/kbz.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                          icon = new BMap.Icon('./images/kbz.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                            break;
                        case '配电室':
-                           icon = new BMap.Icon('./images/pd.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                           icon = new BMap.Icon('./images/pd.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                            break;
                        case '箱式变电站':
-                           icon = new BMap.Icon('./images/xb.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                           icon = new BMap.Icon('./images/xb.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                            break;
                        case '熔断器':
-                           icon = new BMap.Icon('./images/rdq.png', new BMap.Size(21, 50), { fillOpacity: 0.5, anchor: new BMap.Size(11, 25) })
+                           icon = new BMap.Icon('./images/rdq.png', new BMap.Size(26, 60), { fillOpacity: 0.5, anchor: new BMap.Size(13, 30) })
                            break;
                        case "电缆分接箱":
-                           icon = new BMap.Icon('./images/df.png', new BMap.Size(50, 50), { fillOpacity: 0.5, anchor: new BMap.Size(25, 25) })
+                           icon = new BMap.Icon('./images/df.png', new BMap.Size(70, 70), { fillOpacity: 0.5, anchor: new BMap.Size(35, 35) })
                            break;
                        case '杆塔':
                           icon = new BMap.Icon('./images/gt.png', new BMap.Size(15, 15), { fillOpacity: 0.5, anchor: new BMap.Size(8, 8) })
                            break;
                        case '配变':
-                           icon = new BMap.Icon('./images/pb.png', new BMap.Size(56, 35), { fillOpacity: 0.5, anchor: new BMap.Size(28, 18) })
+                           icon = new BMap.Icon('./images/pb.png', new BMap.Size(70, 44), { fillOpacity: 0.5, anchor: new BMap.Size(35, 22) })
                            break
                        }
                      }
