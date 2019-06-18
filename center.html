@@ -74,8 +74,11 @@ span{
         <!--<button  style="float:left;" @click="drawLine('my513')">my513</button>-->
         <!--&lt;!&ndash;<button  style="float:left;" @click="drawLine('yd511')">yd511</button>&ndash;&gt;-->
         <!--<button  style="float:left;" @click=" drawCD()">承德市</button>-->
-        <!--<button  style="float:left;" @click=" drawPoint(110674000000008)">设备点1</button>-->
+        <button  style="float:left;" @click=" show_DataWindow(150677000000003)">设备点1</button>
         <button  style="float:left;" @click=" drawPoint(150677000000003)">设备点2</button>
+        <button  style="float:left;" @click=" drawPoint(200677000000009)">设备点3</button>
+        <button  style="float:left;" @click=" drawPoint(130677000000032)">设备点4</button>
+
         <!--<button  style="float:left;" @click="activeName = 'second'">运行数据</button>-->
         <!--<button  style="float:left;" @click="zoomIn()">放大</button>-->
         <!--<button  style="float:left;" @click="showInfo(1)">自动</button>-->
@@ -94,9 +97,9 @@ span{
                     资产性质:{{this.bdz.nature_assets}} <br>
                     经度:{{this.bdz.longitude}} <br>
                     纬度:{{this.bdz.latitude}} <br>
-                    电站名称:{{this.bdz.name_of_power_station}} <br>
-                    运维单位:{{this.bdz.operational_maintenance}} <br>
-                    电压等级:{{this.bdz.voltage_level}} <br>
+                    电站名称:{{this.bdz.name}} <br>
+                    运维单位:{{this.bdz.maintenance}} <br>
+                    电压等级:{{this.bdz.voltage}} <br>
                     投运日期:{{this.bdz.date_commissioning}} <br>
                     是否智能变电站:{{this.bdz.is_intelligent_substation}} <br>
                     电站重要级别:{{this.bdz.important_power_station}} <br>
@@ -140,14 +143,14 @@ span{
                     工程编号:{{this.df.engineering_number}}<br>
                     工程名称:{{this.df.project_name}}<br>
                     实物ID:{{this.df.physical_id}}<br>
-                    设备名称:{{this.df.name_of_device}}<br>
+                    设备名称:{{this.df.name}}<br>
                     所属地市:{{this.df.subordinate_prefectures}}<br>
                     维护班组:{{this.df.maintenance_team}}<br>
                     设备状态:{{this.df.equipment_status}}<br>
                     是否代维:{{this.df.is_daiwei}}<br>
                     型号:{{this.df.model}}<br>
                     出厂编号:{{this.df.exit_number}}<br>
-                    投运日期:{{this.df.date_of_commissioning}}<br>
+                    投运日期:{{this.df.date_commissioning}}<br>
                     站址:{{this.df.xxh}}<br>
                     重要程度:{{this.df.importance}}<br>
                     专业分类:{{this.df.professional_classific}}<br>
@@ -156,8 +159,8 @@ span{
                     资产编号:{{this.df.asset_number}}<br>
                     设备增加方式:{{this.df.equipment_increase_mode}}<br>
                     运行编号:{{this.df.operation_number}}<br>
-                    运维单位:{{this.df.maintenance_units}}<br>
-                    电压等级:{{this.df.voltage_level}}<br>
+                    运维单位:{{this.df.maintenance}}<br>
+                    电压等级:{{this.df.voltage}}<br>
                     是否农网:{{this.df.is_farm_network}}<br>
                     类型:{{this.df.type}}<br>
                     生产厂家:{{this.df.manufacturer}}<br>
@@ -169,7 +172,7 @@ span{
                 </div>
                 <div v-else-if="type==='开闭站'">
                     资产性质:{{this.kbz.Nature_assets}}<br>
-                    开闭站电站名称:{{this.kbz.Name_power_station}}<br>
+                    开闭站电站名称:{{this.kbz.name}}<br>
                     经度:{{this.kbz.longitude}}<br>
                     纬度:{{this.kbz.latitude}}<br>
                     所属地市:{{this.kbz.Subordinate}}<br>
@@ -187,9 +190,9 @@ span{
                     功能位置编码:{{this.kbz.Functional_Location_Coding}}<br>
                     资产单位:{{this.kbz.Asset_unit}}<br>
                     运行编号:{{this.kbz.Operational_Number}}<br>
-                    运维单位:{{this.kbz.Maintenance_Units}}<br>
-                    电压等级:{{this.kbz.Voltage_level}}<br>
-                    投运日期:{{this.kbz.Date_of_commissioning}}<br>
+                    运维单位:{{this.kbz.maintenance}}<br>
+                    电压等级:{{this.kbz.voltage}}<br>
+                    投运日期:{{this.kbz.date_commissioning}}<br>
                     防误方式:{{this.kbz.Ways_to_prevent_mistakes}}<br>
                     是否农网:{{this.kbz.Is_it_a_farm_network}}<br>
                     站址:{{this.kbz.xxh}}<br>
@@ -268,27 +271,27 @@ span{
             msg:'nihao',
             sb_data:{
                 "bdz":[
-                    {"id":110677000000003,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9646359","latitude":"40.93665088","name_of_power_station":"南郊变电站","operational_maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流110kV","date_commissioning":"1992-11-21","is_intelligent_substation":"否","important_power_station":"四类变电站","is_farm_network":"否","layout_mode":"常规","xxh":"河北省承德市双桥区开发区雹神庙村","building_area":"8004.000","regional_characteristics":"市区","contact_number":"","project_name":"","construction_unit":"","functional_location_coding":"01-DEA0-S-30012","fire_acceptance":"","equipment_owner":"","whether_load_station":"","capacity":"100","asset_unit":"国网冀北电力有限公司","subordinate_prefectures":"国网承德供电公司","maintenance_team":"变电运维一班","equipment_status":"在运","types_of_power_plants":"变电站","is_hub_station":"否","is_daiwei":"否","duty_mode":"无人值班","contamination_grade":"a级","coverage":"8004.000","elevation":"","retirement_date":"","engineering_number":"","design_unit":"","construction_control":"","whether_gis_substation":"否","fire_fighting_types":"","professional_classification":"变电","power_supply_area":"","abbr_name":"","is_n_1":"","can_access_tele_system":"","equipment_coding":"01M10000001117639","dispatching_jurisdiction":"承德地调","access_to_avc":"","is_centralize_monitoring":"","registration_time":"1992-11-26","publication_status":"发布","remarks":""},
+                    {"id":110677000000003,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9646359","latitude":"40.93665088","name":"南郊变电站","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流110kV","date_commissioning":"1992-11-21","is_intelligent_substation":"否","important_power_station":"四类变电站","is_farm_network":"否","layout_mode":"常规","xxh":"河北省承德市双桥区开发区雹神庙村","building_area":"8004.000","regional_characteristics":"市区","contact_number":"","project_name":"","construction_unit":"","functional_location_coding":"01-DEA0-S-30012","fire_acceptance":"","equipment_owner":"","whether_load_station":"","capacity":"100","asset_unit":"国网冀北电力有限公司","subordinate_prefectures":"国网承德供电公司","maintenance_team":"变电运维一班","equipment_status":"在运","types_of_power_plants":"变电站","is_hub_station":"否","is_daiwei":"否","duty_mode":"无人值班","contamination_grade":"a级","coverage":"8004.000","elevation":"","retirement_date":"","engineering_number":"","design_unit":"","construction_control":"","whether_gis_substation":"否","fire_fighting_types":"","professional_classification":"变电","power_supply_area":"","abbr_name":"","is_n_1":"","can_access_tele_system":"","equipment_coding":"01M10000001117639","dispatching_jurisdiction":"承德地调","access_to_avc":"","is_centralize_monitoring":"","registration_time":"1992-11-26","publication_status":"发布","remarks":""},
 
                 ],
                 "kbz":
                     [
-                        {"id":150677000000003,"Nature_assets":"省（直辖市、自治区）公司","Name_power_station":"师专开闭站","longitude":"117.9638649","latitude":"40.89529603","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"1","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40840","Asset_unit":"国网冀北电力有限公司","Operational_Number":"622","Maintenance_Units":"国网承德供电公司运维检修部(检修分公司)","Voltage_level":"交流10kV","Date_of_commissioning":"2010-07-16","Ways_to_prevent_mistakes":"","Is_it_a_farm_network":"否","xxh":"承德民族师范学院南门东侧","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-57099","equipment_coding":"01M00000006350467","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
-                        {"id":150670000000053,"Nature_assets":"省（直辖市、自治区）公司","Name_power_station":"4#开闭站","longitude":"117.9740976","latitude":"40.8924625","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"1","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40717","Asset_unit":"国网冀北电力有限公司","Operational_Number":"627","Maintenance_Units":"国网承德供电公司运维检修部(检修分公司)","Voltage_level":"交流10kV","Date_of_commissioning":"2009-08-01","Ways_to_prevent_mistakes":"机械闭锁","Is_it_a_farm_network":"否","xxh":"郭营子村内","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-56824","equipment_coding":"01M00000006350289","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
-                        {"id":150677000000004,"Nature_assets":"省（直辖市、自治区）公司","Name_power_station":"石油开闭站","longitude":"117.9653059","latitude":"40.90312325","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40856","Asset_unit":"国网冀北电力有限公司","Operational_Number":"601","Maintenance_Units":"国网承德供电公司运维检修部(检修分公司)","Voltage_level":"交流10kV","Date_of_commissioning":"2007-08-01","Ways_to_prevent_mistakes":"","Is_it_a_farm_network":"否","xxh":"开发区大学城附近","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-57369","equipment_coding":"01M00000006350637","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
+                        {"id":150677000000003,"Nature_assets":"省（直辖市、自治区）公司","name":"师专开闭站","longitude":"117.9638649","latitude":"40.89529603","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"1","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40840","Asset_unit":"国网冀北电力有限公司","Operational_Number":"622","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","date_commissioning":"2010-07-16","Ways_to_prevent_mistakes":"","Is_it_a_farm_network":"否","xxh":"承德民族师范学院南门东侧","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-57099","equipment_coding":"01M00000006350467","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
+                        {"id":150670000000053,"Nature_assets":"省（直辖市、自治区）公司","name":"4#开闭站","longitude":"117.9740976","latitude":"40.8924625","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"1","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40717","Asset_unit":"国网冀北电力有限公司","Operational_Number":"627","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","date_commissioning":"2009-08-01","Ways_to_prevent_mistakes":"机械闭锁","Is_it_a_farm_network":"否","xxh":"郭营子村内","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-56824","equipment_coding":"01M00000006350289","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
+                        {"id":150677000000004,"Nature_assets":"省（直辖市、自治区）公司","name":"石油开闭站","longitude":"117.9653059","latitude":"40.90312325","Subordinate":"国网承德供电公司","Maintenance_team":"高新区配电运检班","Equipment_status":"在运","Types_of_power_plants":"开关站","Is_Daiwei":"否","Layout_mode":"常规","Coverage":"","Elevation":"","GIS_Substation":"否","Duty_mode":"无人值班","Spacing_between_Lines":"","Contamination_Grade":"c级","Functional_Location_Coding":"01-DEA0-D-40856","Asset_unit":"国网冀北电力有限公司","Operational_Number":"601","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","date_commissioning":"2007-08-01","Ways_to_prevent_mistakes":"","Is_it_a_farm_network":"否","xxh":"开发区大学城附近","Building_area":"","Regional_characteristics":"市区","Professional_classification":"配电","Importance":"一般","Power_supply_area":"B","abbr_name":"","is_n_1":"","can_access_tele_system":"","station_id":"BE530B05-A4C1-4666-84A5-24EDD25622AB-57369","equipment_coding":"01M00000006350637","publication_status":"发布","supreme_dispatching":"","access_to_avc":"","is_centralize_monitor":"","registration_time":"2011-08-20","remarks":""},
 
                     ],
                 "df":
                     [
-                        {"id":200677000000008,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.959401","latitude":"40.90416272","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路1#","subordinate_prefectures":"国网承德供电公司","maintenance_team":"高新区配电运检班","equipment_status":"在运","is_daiwei":"否","model":"DF4-600","exit_number":"","date_of_commissioning":"1991-08-24","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40690","asset_unit":"国网冀北电力有限公司","asset_number":"160200024853","equipment_increase_mode":"","operation_number":"N514-FZX-SY03","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京清畅电力技术股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006521477","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
-                        {"id":200677000000009,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9633239","latitude":"40.93079041","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路2#电缆接线箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40692","asset_unit":"国网冀北电力有限公司","asset_number":"160200014675","equipment_increase_mode":"","operation_number":"N514-FZX01","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445861","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
-                        {"id":200677000000010,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9614118","latitude":"40.92646686","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路3#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40693","asset_unit":"国网冀北电力有限公司","asset_number":"160200014676","equipment_increase_mode":"","operation_number":"N514-FZX02","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445881","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
-                        {"id":200677000000011,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9597811","latitude":"40.92284059","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路4#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40694","asset_unit":"国网冀北电力有限公司","asset_number":"160200014677","equipment_increase_mode":"","operation_number":"N514-FZX03","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445895","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
-                        {"id":200677000000012,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9735249","latitude":"40.89700171","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路4#箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"DF4-600","exit_number":"","date_of_commissioning":"2004-08-24","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40695","asset_unit":"国网冀北电力有限公司","asset_number":"160200014678","equipment_increase_mode":"","operation_number":"N514-FZX-SY04","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京清畅电力技术股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006521764","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
-                        {"id":200677000000013,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9573629","latitude":"40.91666452","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路5#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40696","asset_unit":"国网冀北电力有限公司","asset_number":"160200014679","equipment_increase_mode":"","operation_number":"N514-FZX04","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445907","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
-                        {"id":200677000000014,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9563272","latitude":"40.911873","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路6#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40697","asset_unit":"国网冀北电力有限公司","asset_number":"160200014680","equipment_increase_mode":"","operation_number":"N514-FZX05","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006446189","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
-                        {"id":200677000000015,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9563272","latitude":"40.911873","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路6#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40697","asset_unit":"国网冀北电力有限公司","asset_number":"160200014680","equipment_increase_mode":"","operation_number":"N514-FZX05","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006522016","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
-                        {"id":200677000000016,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9608536","latitude":"40.9101937","engineering_number":"","project_name":"","physical_id":"","name_of_device":"南514线路7#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_of_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40640","asset_unit":"国网冀北电力有限公司","asset_number":"160200014490","equipment_increase_mode":"","operation_number":"N514-FZX06","maintenance_units":"国网承德供电公司运维检修部(检修分公司)","voltage_level":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006446208","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000008,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.959401","latitude":"40.90416272","engineering_number":"","project_name":"","physical_id":"","name":"南514线路1#","subordinate_prefectures":"国网承德供电公司","maintenance_team":"高新区配电运检班","equipment_status":"在运","is_daiwei":"否","model":"DF4-600","exit_number":"","date_commissioning":"1991-08-24","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40690","asset_unit":"国网冀北电力有限公司","asset_number":"160200024853","equipment_increase_mode":"","operation_number":"N514-FZX-SY03","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京清畅电力技术股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006521477","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
+                        {"id":200677000000009,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9633239","latitude":"40.93079041","engineering_number":"","project_name":"","physical_id":"","name":"南514线路2#电缆接线箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40692","asset_unit":"国网冀北电力有限公司","asset_number":"160200014675","equipment_increase_mode":"","operation_number":"N514-FZX01","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445861","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000010,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9614118","latitude":"40.92646686","engineering_number":"","project_name":"","physical_id":"","name":"南514线路3#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40693","asset_unit":"国网冀北电力有限公司","asset_number":"160200014676","equipment_increase_mode":"","operation_number":"N514-FZX02","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445881","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000011,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9597811","latitude":"40.92284059","engineering_number":"","project_name":"","physical_id":"","name":"南514线路4#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40694","asset_unit":"国网冀北电力有限公司","asset_number":"160200014677","equipment_increase_mode":"","operation_number":"N514-FZX03","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445895","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000012,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9735249","latitude":"40.89700171","engineering_number":"","project_name":"","physical_id":"","name":"南514线路4#箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"DF4-600","exit_number":"","date_commissioning":"2004-08-24","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40695","asset_unit":"国网冀北电力有限公司","asset_number":"160200014678","equipment_increase_mode":"","operation_number":"N514-FZX-SY04","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京清畅电力技术股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006521764","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
+                        {"id":200677000000013,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9573629","latitude":"40.91666452","engineering_number":"","project_name":"","physical_id":"","name":"南514线路5#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40696","asset_unit":"国网冀北电力有限公司","asset_number":"160200014679","equipment_increase_mode":"","operation_number":"N514-FZX04","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006445907","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000014,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9563272","latitude":"40.911873","engineering_number":"","project_name":"","physical_id":"","name":"南514线路6#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40697","asset_unit":"国网冀北电力有限公司","asset_number":"160200014680","equipment_increase_mode":"","operation_number":"N514-FZX05","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006446189","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
+                        {"id":200677000000015,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9563272","latitude":"40.911873","engineering_number":"","project_name":"","physical_id":"","name":"南514线路6#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40697","asset_unit":"国网冀北电力有限公司","asset_number":"160200014680","equipment_increase_mode":"","operation_number":"N514-FZX05","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006522016","registration_time":"2011-08-24","publication_status":"发布","remarks":""},
+                        {"id":200677000000016,"nature_assets":"省（直辖市、自治区）公司","longitude":"117.9608536","latitude":"40.9101937","engineering_number":"","project_name":"","physical_id":"","name":"南514线路7#电缆分接箱","subordinate_prefectures":"国网承德供电公司","maintenance_team":"电缆运检二班","equipment_status":"在运","is_daiwei":"否","model":"HWG-12-5F","exit_number":"","date_commissioning":"1991-08-22","xxh":"","importance":"一般","professional_classific":"配电","location_coding":"01-DEA0-D-40640","asset_unit":"国网冀北电力有限公司","asset_number":"160200014490","equipment_increase_mode":"","operation_number":"N514-FZX06","maintenance":"国网承德供电公司运维检修部(检修分公司)","voltage":"交流10kV","is_farm_network":"否","type":"电缆分支箱","manufacturer":"北京科锐配电自动化股份有限公司","date_of_production":"","grounding_resistance":"5.0000","regional_char":"市区","equipment_owner":"","power_supply_area":"B","equipment_coding":"01M00000006446208","registration_time":"2011-08-22","publication_status":"发布","remarks":""},
 
                     ]
             },
@@ -296,9 +299,9 @@ span{
                 nature_assets:null,
                 longitude:null,
                 latitude:null,
-                name_of_power_station:null,
-                operational_maintenance:null,
-                voltage_level:null,
+                name:null,
+                maintenance:null,
+                voltage:null,
                 date_commissioning:null,
                 is_intelligent_substation:null,
                 important_power_station:null,
@@ -347,7 +350,7 @@ span{
             },
             kbz:{
                 Nature_assets:'1',
-                Name_power_station:'2',
+                name:'2',
                 longitude:'3',
                 latitude:null,
                 Subordinate:null,
@@ -365,9 +368,9 @@ span{
                 Functional_Location_Coding:null,
                 Asset_unit:null,
                 Operational_Number:null,
-                Maintenance_Units:null,
-                Voltage_level:null,
-                Date_of_commissioning:null,
+                maintenance:null,
+                voltage:null,
+                date_commissioning:null,
                 Ways_to_prevent_mistakes:null,
                 Is_it_a_farm_network:null,
                 xxh:null,
@@ -395,14 +398,14 @@ span{
                 engineering_number:null,
                 project_name:null,
                 physical_id:null,
-                name_of_device:null,
+                name:null,
                 subordinate_prefectures:null,
                 maintenance_team:null,
                 equipment_status:null,
                 is_daiwei:null,
                 model:null,
                 exit_number:null,
-                date_of_commissioning:null,
+                date_commissioning:null,
                 xxh:null,
                 importance:null,
                 professional_classific:null,
@@ -411,8 +414,8 @@ span{
                 asset_number:null,
                 equipment_increase_mode:null,
                 operation_number:null,
-                maintenance_units:null,
-                voltage_level:null,
+                maintenance:null,
+                voltage:null,
                 is_farm_network:null,
                 type:null,
                 manufacturer:null,
@@ -440,6 +443,7 @@ span{
             },
             activeName: 'first',
             type:'开闭站',
+            sb_point:{},
             map: null,
             border:[],
             border_marker:[],
@@ -1136,8 +1140,7 @@ span{
             // 以点放大居中， 是配变，则显示停电区域
             drawPoint(_point){
                 // _point = msg.parameters.id 根据收到的消息
-                this.activeName = 'first'
-                document.getElementById('tabs').style.display = 'block' //让标签页显示
+                document.getElementById('tabs').style.display ='none'
 
 //                var that = this
                 if(this.selectedPoint2.length != 0 ){
@@ -1167,7 +1170,7 @@ span{
 //                        that.point = data;
                         let po =data[0]
                         that.type = po.type //获取当前数据类型
-
+                        that.getSbData(_point) //获取当前设备数据
                         let label = new BMap.Label(po.name, { offset: new BMap.Size(-50, 70) })
                         label.setStyle({borderColor: '#4682B4',borderWidth:'4px',borderStyle:'double',fontSize:'20px',fontFamily:'黑体',fontWeight:'bold'})
                         let center = new BMap.Point(po.lg, po.lat)
@@ -1177,8 +1180,12 @@ span{
                         marker.setLabel(label)
                         that.selectedPoint2.push(marker)
 //						//窗口显示选中点的相关信息
-//						var content = "设备名称："+po.name+"<br>"+" 横坐标："+po.lg+"<br>" +"纵坐标："+po.lat
-//                         that.openInfo(po.lg, po.lat,content)
+						var content = `<div style="background: cadetblue;margin-top:10px">
+                                            <div class="data_item">设备名称：${po.name}</div><br>
+                                            <div class="data_item">横坐标：${po.lg}</div><br>
+                                            <div class="data_item">纵坐标：${po.lat}</div><br>
+                                        </div>`
+                         that.openInfo(po.lg, po.lat,_point,content)
 						
                         // 如果该点type为配变，添加供电区域
                         if(po.type==='配变'){
@@ -1197,15 +1204,21 @@ span{
                     }
                 })
 
-              that.getSbData(_point)
+            },
+            show_DataWindow(_activeName){
+                this.activeName = _activeName
+                document.getElementById('tabs').style.display = 'block' //让标签页显示
+//                this.getSbData(_point)
             },
             getSbData(_point){
-
+               // 因为不同类型设备的数据项不一样，所以要这样
+                this.sb_point =null
                 switch (this.type){
                     case '变电站':
                         this.sb_data.bdz.filter(item =>{
                             if(item.id === _point){
                                 this.bdz = item
+                                this.sb_point = item
                             }
                         })
                         break
@@ -1213,6 +1226,7 @@ span{
                         this.sb_data.kbz.filter(item =>{
                             if(item.id == _point){
                                 this.kbz = item
+                                this.sb_point = item
                             }
                         })
                         break
@@ -1220,6 +1234,7 @@ span{
                         this.sb_data.df.filter(item =>{
                             if(item.id === _point){
                                 this.df =  item
+                                this.sb_point = item
                             }
                         })
                         break
@@ -1227,14 +1242,30 @@ span{
                 console.log(this.kbz)
             },
 		 //展示信息窗口
-		  openInfo(x,y,content){
+		  openInfo(x,y,_point,content){
+                //  可以使用es6的模板字符串来写html
 			  var opts ={
-				  width:200,
-				  height:200,
-				  title:'设备信息',
-				  enableAutoPan:false
+				  width:330,
+				  height:400,
+				  title:  `  <div id="info_title" style="color:white;background:cadetblue;height: 60px;margin-top:20px;font-size: 30px;font-weight: 800">
+                                   <div style="padding-top:15px;">设备信息</div>
+                              </div>`,
+				  enableAutoPan:true , //是否开启信息窗口打开时地图自动移动（默认开启）
+                  enableCloseOnClick: false  //是否开启点击地图关闭信息窗口（默认开启）
 				}
 			  var point =new BMap.Point(x,y)
+              // 通过id 获取设备数据
+
+              var po =  this.sb_point
+              if(po != null){
+                  content = content+`<div style="background: cadetblue;">
+                                        <div class="data_item">设备编码：${po.id}</div><br>
+                                        <div class="data_item">运维单位：${po.maintenance}</div><br>
+                                        <div class="data_item">投运日期：${po.date_commissioning}</div><br>
+                                        <div class="data_item">电压等级：${po.voltage}</div><br>
+                                     </div>`
+              }
+
 			  var infoWindow = new BMap.InfoWindow(content,opts)
 			  this.map.openInfoWindow(infoWindow,point)  // 在地图上加载信息窗口，（窗口的内容，窗口的位置）
 			},
@@ -1385,8 +1416,8 @@ span{
                 this.getLine(_line)  // 获取线路点线
                 this.getLineData(_line)  // 获取线路数据
                 this.type = '线路'
-                this.activeName = 'first'
-                document.getElementById('tabs').style.display = 'block'; //让标签页显示
+//                this.activeName = 'first'
+                document.getElementById('tabs').style.display = 'none'; //让标签页隐藏
 
                 // 先清理地图上的所选线路的点和连线
                 if(this.allMarker.length != 0 ){
@@ -1558,15 +1589,17 @@ span{
             },
             //缩放
             zoomchange( msg){
-                if(msg === 'zoomIn'){
-                    let z =this.map.getZoom()
-                    z = z+2
-                    this.map.setZoom(z)
+                if(msg == 'zoomIn'){
+//                    let z =this.map.getZoom()
+//                    z = z+2
+//                    this.map.setZoom(z)
+                    this.map.zoomIn()
                     this.showInfo(1)
                 }else{
-                    let z =this.map.getZoom()
-                    z = z-2
-                    this.map.setZoom(z)
+//                    let z =this.map.getZoom()
+//                    z = z-2
+//                    this.map.setZoom(z)
+                    this.map.zoomOut()
                     this.showInfo(1)
                 }
             },

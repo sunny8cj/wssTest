@@ -4,7 +4,7 @@
     <el-row >
       <el-col :span="8" >
       <el-button  @click="click()" id="bt_cd"></el-button>
-          <el-select  v-model="value"   @change="changeSelect()" id="select_qx" style="width:199px;height:60px">
+          <el-select  v-model="value"   @change="changeSelect()" id="select_qx" style="width:199px;height:58px" >
             <el-option
               v-for="(item,index) in options"
               :key="index"
@@ -27,6 +27,13 @@
   <div id="web-main">
 
         <div id="bt_group">
+          <div id="bt_data">
+            <el-radio-group v-model="radio" @change="show_DataWindow">
+              <el-radio-button label="基础数据"></el-radio-button>
+              <el-radio-button label="运行数据"></el-radio-button>
+              <el-radio-button label="其他数据"></el-radio-button>
+            </el-radio-group>
+          </div>
           <div id="bt_detail">
             <el-button  @click="getPbData(flines)" id="bt_gdfw"></el-button>
             <el-button  @click="showFZL(dist,'负载率')" id="bt_fzl"></el-button>
@@ -43,7 +50,7 @@
                 :value="item.name" >
               </el-option>
             </el-select>
-              <el-select id="select2" v-model="value2" filterable  placeholder="搜索线路"  clearable   remote    default-first-option  :loading="loading"
+              <el-select id="select2" v-model="value2" filterable  placeholder="搜索线路"  clearable   remote    default-first-option  :loading="loading2"
               :remote-method="remoteMethod2"   @change="search2"   >
               <el-option
                 v-for="(item,index)  in options2"
@@ -77,7 +84,7 @@
       <div id="graphContainer">
      
       </div>
-        <div id="map">
+        <div id="map" @mousedown="sendXY">
       </div>
       <div id="img">
         <img :src="imgurl">
@@ -86,7 +93,7 @@
         <div id="properties">
           <div id="properPB"  style="display:none">
              <div class="biaoqian">
-              <div class="canshu"> 配变名称：{{pb.name}} </div>
+              <div class="canshu"> 设备名称：{{pb.name}} </div>
             </div>
              <div class="biaoqian">
               <div class="canshu">型号：{{pb.xh}} </div>
@@ -153,7 +160,7 @@
                 <el-row>
                   <el-col :span="16">
                      <div id="mychart1" style="width:580px; ">
-                      <ve-line :data="chartData1" :settings="chartSettings"> </ve-line>
+                      <ve-line :data="chartData1" :settings="chartSettings" > </ve-line>
                     </div>
                   </el-col>
                 </el-row>
@@ -193,7 +200,7 @@
 
           </div>
         </div>
-  
+
   </div>
 </div>
 </template>
@@ -203,12 +210,14 @@ import post from '@/api'
 import axios from 'axios'
 export default {
   inject:['reload'], //注入依赖
-  name: 'Demo5',
+  name: 'Demo6',
   data () {
     this.chartSettings = {
       area: true
     }
     return {
+      radio: '基础数据',
+      activeName:'first',
       pb:{
         name:'我是配变测试数据',
       },
@@ -247,6 +256,7 @@ export default {
       options1:[], // 模糊搜索的选项
       options2:[], // 模糊搜索的选项
       loading:false,
+      loading2:false,
       checkbox1:[],
       zd_bg:'primary',
       imgurl: '', //承德市的网架图
@@ -367,6 +377,21 @@ export default {
       // 方法2
         this.client.send(this.topic,s,0)
     },
+    show_DataWindow(radio){
+      switch(radio){
+        case '基础数据':
+          this.activeName = 'first'
+          break
+        case '运行数据':
+          this.activeName = 'second'
+          break
+        case '其他数据':
+          this.activeName = 'third'
+          break
+      }
+      this.msg = "{\"client\":\"middle\",\"actionType\":\"show_DataWindow\",\"parameters\":{\"activeName\":\""+this.activeName+"\"}}"
+      this.sendMsg(this.msg)
+    },
     // 选中线路后的相关操作
     sendLine(_line){
       this.flines=[]
@@ -400,14 +425,7 @@ export default {
        }
       )
     },
-         // 搜索 线路
-    search2(){
-      if(this.value2 !=''){
-        this.sendLine(this.value2)// 根据名称定位点
-      }
-      
 
-    },
     //模糊搜索 设备
     remoteMethod(query){
       if(query !== ''){
@@ -431,29 +449,33 @@ export default {
        this.options1 = response
       })
     },
+             // 搜索 线路
+    search2(){
+      if(this.value2 !=''){
+        this.sendLine(this.value2)// 根据名称定位点
+      }
+    },
        //模糊搜索 线路
     remoteMethod2(query){
       if(query !== ''){
-        this.loading = true
+        this.loading2 = true
         setTimeout(() => {
-          this.loading = false
-          this.getLine(query)
-        })
+          this.loading2 = false
+          this.searchLine(query)
+        },500)
         
       }
       else {
         this.options2 = []
       }
     },
-     getLine(value){
-       console.log("线路搜索"+value)
+    searchLine(value){
       post({
         url: 'http://127.0.0.1:8089/web/map/queryFline',
         method: 'post',
         data: {fline:value}
       }).then(response  => {
        this.options2 = response
-       console.log("线路搜索"+this.options2)
       })
     },
     //通过name 搜索变电站，并定位
@@ -522,6 +544,7 @@ export default {
     },
     // 隐藏接线图
     hideDetail(){
+      //此处可优化
              //1.如果当前dist是营子区，从设备详细跳转到营子区
 
         //1.如果当前dist为单线图，如果详情页可见，从详情页返回单线图
@@ -530,15 +553,17 @@ export default {
        
       // 如果flines为空,表示
       if(this.flines.length ===0){
-        this.msg = "{\"client\":\"left\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
+        this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
         this.sendMsg(this.msg)
+           this.drawDist(this.dist)
+          this.getYZ(this.dist)
       }else{
         if(document.getElementById('img').style.display === 'none'){
           // this.dist = '营子区'
           this.flines = []
           this.drawDist(this.dist)
           this.getYZ(this.dist)
-          this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\"营子区\"}}"
+          this.msg = "{\"client\":\"left middle\", \"actionType\":\"switch_dist\", \"parameters\":{\"dist\":\""+this.dist+"\"}}"
           this.sendMsg(this.msg)
         }else{
           this.msg = "{\"client\":\"left\",\"actionType\":\"switch_line\",\"parameters\":{\"dist\":\""+this.flines[0]+"\"}}"
@@ -666,25 +691,24 @@ export default {
     //放大
     zoomIn () {
       this.graph.zoomIn()
-      let z =this.map.getZoom()
-      z = z+2
-        this.map.setZoom(z)
+      this.map.zoomIn()
+      // let z =this.map.getZoom()
+      // z = z+2
+      //   this.map.setZoom(z)
         if(this.dist === '承德市'){
            this.showInfo(1)
         }
-      this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
+      this.msg = "{\"client\":\"left middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"zoomIn\"}}"
       this.sendMsg(this.msg)
     },
     //缩小
     zoomOut () {
       this.graph.zoomOut()
-       let z =this.map.getZoom()
-      z = z-2
-          this.map.setZoom(z)
+      this.map.zoomOut()
       if(this.dist === '承德市'){
           this.showInfo(1)
         }
-        this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"缩小\"}}"
+        this.msg = "{\"client\":\"left middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"zoomOut\"}}"
       this.sendMsg(this.msg)
     },
     //获取承德市地理图数据
@@ -783,29 +807,39 @@ export default {
                   p1 = new BMap.Point(po.lg, po.lat)
                 } else  if(po.id === li.target){
                   p2 = new BMap.Point(po.lg, po.lat)
+             if(po.type==='变电站'){
                   switch(po.voltage){
-                    case 220:
-                    line_color = 'purple'
+                  case 220:
+                  line_color = 'purple'
+                  line_style = 'solid'
+                  line_weight = 2
+                    break
+                  case 110:
+                    line_color = 'red'
                     line_style = 'solid'
                     line_weight = 2
-                      break
-                    case 110:
-                      line_color = 'red'
-                      line_style = 'solid'
-                      line_weight = 2
-                      break
-                    case 35:
-                      line_color = '#0000EE'
-                      line_style = 'solid'
-                      line_weight = 2
-                      break
+                    break
+                  case 35:
+                    line_color = '#0000EE'
+                    line_style = 'solid'
+                    line_weight = 2
+                    break
                   }
+                }else{
+                    line_color = '#080808'
+                    line_style = 'solid'
+                    line_weight = 2
+                }
                 }
               }
               dd.push(p1)
           // 加入li的拐点
           for(let go of li.guai){
            var p = new BMap.Point(go.lg, go.lat)
+          var icon = new BMap.Icon('/static/bdmap/images/gt.png', new BMap.Size(21, 21), { fillOpacity: 1, anchor: new BMap.Size(12, 12) })
+          var mm = new BMap.Marker(p, { icon: icon ,title:p.name})
+           this.allMarker.push(mm)
+           this.map.addOverlay(mm)
             dd.push(p)
           }
           dd.push(p2)
@@ -839,6 +873,10 @@ export default {
        //大屏相同位置显示信息窗口
       this.msg = "{\"client\":\"middle\", \"actionType\":\"show_InfoWindow\", \"parameters\":{\"content\":\""+content+"\",\"x\":\""+x+"\",\"y\":\""+y+"\"}}"
       this.sendMsg(this.msg)
+    },
+    sendXY(event){
+      var x = event.offsetX
+      var y = event.offsetY
     },
     // 获取区县地理图数据
     getDistData(_dist){
@@ -914,13 +952,13 @@ export default {
              var t = ''
             if(item.type === '变电站'){
               if(item.voltage===35){
-                icon = new BMap.Icon('../static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }else if(item.voltage===110){
-                icon = new BMap.Icon('../static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }else if(item.voltage===220){
-                icon = new BMap.Icon('../static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }else if(item.voltage===500){
-                icon = new BMap.Icon('../static/bdmap/images/cd500.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                icon = new BMap.Icon('../static/bdmap/images/500.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
               }
               t = item.name.indexOf('变')
               label = new BMap.Label(item.name.substr(0,t), { offset: new BMap.Size(-20, 45) })
@@ -938,7 +976,7 @@ export default {
                  icon = ''
                   break
                 default:
-                  icon = new BMap.Icon('../static/bdmap/images/pb.png', new BMap.Size(39, 26), { fillOpacity: 1, anchor: new BMap.Size(20, 13) })
+                  icon = new BMap.Icon('../static/bdmap/images/pb.png', new BMap.Size(35, 22), { fillOpacity: 1, anchor: new BMap.Size(13, 11) })
                   break
                   }
             }
@@ -1013,7 +1051,7 @@ export default {
           }
           this.showInfo(1)
     },
-    // 获取线路坐标和连线
+    // 获取地理图线路坐标和连线
     getLine(_line){
       var that = this
       post({
@@ -1041,9 +1079,9 @@ export default {
             data: {fline:_line}
           }).then(response  => {
             that.xl =response
-            this.chartData1.rows = that.xl.activePowerHis 
-            this.chartData2.rows = that.xl.ratedCurrentHis
-            this.chartData3.rows = that.xl.currentLoadingHis
+            that.chartData1.rows = that.xl.activePowerHis 
+            that.chartData2.rows = that.xl.ratedCurrentHis
+            that.chartData3.rows = that.xl.currentLoadingHis
         })
     },
    //绘制线路
@@ -1080,11 +1118,11 @@ export default {
                   var t = ""
                   if(po.type === '变电站'){
                       if(po.voltage=== 35){
-                          icon = new BMap.Icon('/static/bdmap/images/cd35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          icon = new BMap.Icon('/static/bdmap/images/35.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                       }else if(po.voltage===110){
-                          icon = new BMap.Icon('/static/bdmap/images/cd110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          icon = new BMap.Icon('/static/bdmap/images/110.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                       }else if(po.voltage=== 220){
-                          icon = new BMap.Icon('/static/bdmap/images/cd220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                          icon = new BMap.Icon('/static/bdmap/images/220.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                       }
                       t = po.name.indexOf('变')
                       label = new BMap.Label(po.name.substr(0,t), { offset: new BMap.Size(-20, 45) })
@@ -1097,10 +1135,10 @@ export default {
                         icon = new BMap.Icon('/static/bdmap/images/kbz.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                           break
                         case '杆塔':
-                        icon = ''
+                        icon = new BMap.Icon('/static/bdmap/images/gt.png', new BMap.Size(15, 14), { fillOpacity: 1, anchor: new BMap.Size(13, 7) })
                           break
-                        case '跌落式熔断器':
-                        icon = new BMap.Icon('/static/bdmap/images/rdq.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
+                        case '熔断器':
+                        icon = new BMap.Icon('/static/bdmap/images/rdq.png', new BMap.Size(21, 50), { fillOpacity: 1, anchor: new BMap.Size(11, 25) })
                           break
                         case '配电室':
                         icon = new BMap.Icon('/static/bdmap/images/pd.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
@@ -1112,18 +1150,18 @@ export default {
                         icon = new BMap.Icon('/static/bdmap/images/xb.png', new BMap.Size(35, 35), { fillOpacity: 1, anchor: new BMap.Size(18, 18) })
                           break
                         default:
-                          icon = new BMap.Icon('/static/bdmap/images/pb.png', new BMap.Size(39, 26), { fillOpacity: 1, anchor: new BMap.Size(20, 13) })
+                          icon = new BMap.Icon('/static/bdmap/images/pb.png', new BMap.Size(35, 22), { fillOpacity: 1, anchor: new BMap.Size(20, 13) })
                           break
                           }
                     }
 
                   var p0 = new BMap.Point(po.lg, po.lat)
                   var m0 = new BMap.Marker(p0, { icon: icon })
-                  if(po.type !== '杆塔'){
+        
                       this.map.addOverlay(m0)
                       po["marker"]=m0
                    
-                  }
+         
                      po["isShow"]= 'true'
                   this.selectedPoint.push(m0)
                   m0.setLabel(label)
@@ -1264,53 +1302,101 @@ export default {
           this.map.removeOverlay(po.marker)
           switch(po.voltage){
             case 35:
-              if (z >14) {this.map.addOverlay(po.marker) }
+              if (z >14) {
+                this.map.addOverlay(po.marker) 
+                  po.isShow='true'
+                }
                 break
             case 110:
-              if (z>12) {this.map.addOverlay(po.marker) }
+              if (z>12) {
+                this.map.addOverlay(po.marker) 
+                po.isShow='true'}
               break
             case 220:
-              if (z>10) { this.map.addOverlay(po.marker) }
+              if (z>10) { this.map.addOverlay(po.marker) 
+                po.isShow='true'
+                }
               break
             case 500:
-              if (z >10) { this.map.addOverlay(po.marker) }
+              if (z >10) { this.map.addOverlay(po.marker)
+                po.isShow='true'
+              }
               break
           }
            switch(po.type){
             case '开闭站':
-                if (z >14) {this.map.addOverlay(po.marker) }
+                if (z >14) {this.map.addOverlay(po.marker) 
+                  po.isShow='true'
+                }
                 break
             case '环网柜':
-              if (z>14) {this.map.addOverlay(po.marker) }
+              if (z>14) {this.map.addOverlay(po.marker) 
+                po.isShow='true'
+              }
               break
             case '配变':
-              if (z>14) { this.map.addOverlay(po.marker) }
+              if (z>14) { this.map.addOverlay(po.marker)
+                po.isShow='true'
+              }
               break
             case '杆塔':
-              if (z >14) { this.map.addOverlay(po.marker) }
+              if (z >14) { this.map.addOverlay(po.marker) 
+                po.isShow='true'
+              }
               break
           }
         }
         for (let li of line){
           this.map.removeOverlay(li.line)
-          switch(li.fline){
-            case '220-220':
-                if (z>10) {this.map.addOverlay(li.line) }
-                break
-            case '220-110':
-              if (z>12) {this.map.addOverlay(li.line) }
-              break
-            case '110-110':
-              if (z>12) { this.map.addOverlay(li.line) }
-              break
-            case '110-35':
-              if (z >14) {  this.map.addOverlay(li.line) }
-              break
-            default:   // 其他都是单线图
-              if (z >14) {  this.map.addOverlay(li.line) }
-              break
+          // 如果checkbox1包括source.voltage target.volget， 则这条线出现
+          var p1,p2
+          for(let po of point){
+               if(po.id === li.source){
+                p1 = po
+              }else if(po.id === li.target){
+                p2 = po
+              }
           }
+          
+          if((p1.isShow === 'true')&&(p2.isShow === 'true')){
+              this.map.addOverlay(li.line)
+          }
+          
         }
+        // for (let li of line){
+        //   this.map.removeOverlay(li.line)
+        //   switch(li.voltage){
+        //     case 220:
+        //       if (z>10) {this.map.addOverlay(li.line) }
+        //         break
+        //     case 110:
+        //       if (z>12) {this.map.addOverlay(li.line) }
+        //       break
+        //     case 35:
+        //       if (z >14) {  this.map.addOverlay(li.line) }
+        //       break
+        //     default:   // 其他都是单线图
+        //       if (z >14) {  this.map.addOverlay(li.line) }
+        //       break
+        //   }
+        //   //    switch(li.fline){
+        //   //   case '220-220':
+        //   //       if (z>10) {this.map.addOverlay(li.line) }
+        //   //       break
+        //   //   case '220-110':
+        //   //     if (z>12) {this.map.addOverlay(li.line) }
+        //   //     break
+        //   //   case '110-110':
+        //   //     if (z>12) { this.map.addOverlay(li.line) }
+        //   //     break
+        //   //   case '110-35':
+        //   //     if (z >14) {  this.map.addOverlay(li.line) }
+        //   //     break
+        //   //   default:   // 其他都是单线图
+        //   //     if (z >14) {  this.map.addOverlay(li.line) }
+        //   //     break
+        //   // }
+        // }
       }
       // 多选
       if(e === 2){
@@ -1427,12 +1513,29 @@ export default {
 
         // 画网架图
         this.graph = new mxGraph(container)
-        this.graph.setEnabled(true) // 图元是否可移动
-        this.graph.setAutoSizeCells(true)
+      
+        // this.graph.setEnabled(true) // 图元是否可移动
+        // this.graph.setAutoSizeCells(true)
         
-        this.graph.panningHandler.useLeftButtonForPanning = true
-        this.graph.setPanning(true)
-     var that =this
+        // this.graph.panningHandler.useLeftButtonForPanning = true //左键移动
+        this.graph.setPanning(true)   //// 右键移动容器坐标轴
+        var x1,y1
+        mxPanningHandler.prototype.isPanningTrigger = function(me) {
+          var evt = me.getEvent();
+            x1 = me.graphX
+            y1 = me.graphY
+          return true;
+        }
+
+
+                  
+        // 启用导航线  
+        mxGraphHandler.prototype.guidesEnabled = true;  
+                  
+        // // 是否自动连接目标  
+        // mxEdgeHandler.prototype.snapToTerminals = false;  
+          
+        var that =this
         // 容器大小自适应
         // this.graph.setResizeContainer(true);
 
@@ -1446,17 +1549,36 @@ export default {
    
         let d1= document.getElementById('graphContainer')
         that.d2= document.getElementById('map')
+           
 
-        //图元选中事件
-        this.graph.addListener(mxEvent.CLICK, function(sender, evt) { 
+        //选中图元事件
+       var x2,y2,shiftX,shiftY
+        this.graph.addListener(mxEvent.CLICK, function(sender, evt) {
+    
+           x2 = evt.properties.event.offsetX
+           y2 = evt.properties.event.offsetY
+           shiftX = x2-x1
+           shiftY = y2-y1
+           // 偏移量
+           that.msg = "{\"client\":\"left\", \"actionType\":\"shift\", \"parameters\":{\"x\":\""+shiftX+"\",\"y\":\""+shiftY+"\"}}"
+           that.sendMsg(that.msg)
           that.cell = evt.getProperty('cell')
           if(typeof that.cell != 'object') return
           let properDiv= document.getElementById('properties')
           // 点击图元，联动mqtt发消息
-          // 选中的是线段
-          if(that.cell.source!=null){
-            // properDiv.innerHTML= that.cell.source.id+ '   '+that.cell.target.id
-            // 线段联动
+          if(that.graph.getModel().isVertex(that.cell)){
+              // 如果点击的是节点
+                // 点联动
+            document.getElementById('properXL').style.display = 'none'
+            document.getElementById('properPB').style.display = 'block'
+            that.pId = that.cell.id
+            that.pName = that.cell.value
+            that.onPoint(that.pId)
+            that.getPoint(that.pId)
+          }
+          if(that.graph.getModel().isEdge(that.cell)){
+              // 连线
+                  // 线段联动
             // 获取线段的起始点坐标
             document.getElementById('properXL').style.display = 'block'
             document.getElementById('properPB').style.display = 'none'
@@ -1466,34 +1588,42 @@ export default {
             }else{
               that.drawLine_s(that.cell.source.id,that.cell.target.id)
             }
-          }else {   // 选中的设备点
-            // properDiv.innerHTML=that.cell.id
-            // 点联动
-             document.getElementById('properXL').style.display = 'none'
-            document.getElementById('properPB').style.display = 'block'
-            that.pId = that.cell.id
-            that.pName = that.cell.value
-            that.onPoint(that.pId)
-            that.getPoint(that.pId)
           }
+          // 选中的是线段
+          // if(that.cell.source !==null){
+          //   // properDiv.innerHTML= that.cell.source.id+ '   '+that.cell.target.id
+          //   // 线段联动
+          //   // 获取线段的起始点坐标
+          //   document.getElementById('properXL').style.display = 'block'
+          //   document.getElementById('properPB').style.display = 'none'
+          //   that.onLine(that.cell.source.id,that.cell.target.id) //发送起始点 给中左
+          //   if(that.cell.value !== null){
+          //       that.sendLine(that.cell.value) //根据单线图名称画 网架图和地理图，并发送消息  给中屏画单线图
+          //   }else{
+          //     that.drawLine_s(that.cell.source.id,that.cell.target.id)
+          //   }
+          // }else {   // 选中的设备点
+          //   // properDiv.innerHTML=that.cell.id
+          //   // 点联动
+          //   document.getElementById('properXL').style.display = 'none'
+          //   document.getElementById('properPB').style.display = 'block'
+          //   that.pId = that.cell.id
+          //   that.pName = that.cell.value
+          //   that.onPoint(that.pId)
+          //   that.getPoint(that.pId)
+          // }
 
         })
         
         let parent = this.graph.getDefaultParent()
         let style = []  
         style[mxConstants.STYLE_STROKECOLOR] = '#6482B9'  
-        style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector   // 自动拐弯的连线
+        // style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector   // 自动拐弯的连线
         style[mxConstants.STYLE_FONTSIZE] = '18'  
 				this.graph.getStylesheet().putDefaultEdgeStyle(style) 
         // style = this.graph.getStylesheet().getDefaultEdgeStyle();
         // delete style['endArrow'];
-        this.graph.getModel().beginUpdate()
-        try {
-          this.click()
-        } finally {
-          this.graph.getModel().endUpdate()
-        }
-        // 鼠标经过时显示绿色边框
+        this.click()
         let track = new mxCellTracker(this.graph, '#00FFff')
       }
 
@@ -1509,7 +1639,9 @@ export default {
       post({
         url: 'http://127.0.0.1:8089/web/wj/queryLine',
         method: 'post',
-        data: {  dist:_dist}
+        data: {  dist:_dist
+        // id:_dist==='nj514'?15:null
+        }
       }).then(response => {
         this.line_wj=response
          this.drawYZ()
@@ -1535,26 +1667,32 @@ export default {
         document.getElementById('line_name').innerHTML = that.flines[0]+'线路单线图'
         document.getElementById('line_name').style.display = 'block'
       }
-      for(let item of that.point_wj){
+          that.graph.getModel().beginUpdate()
+        try {
+     for(let item of that.point_wj){
           var labelWidth =item.labelWidth
           var labelHeight = item.labelHeight
           if(item.type === '变电站'){
             switch(item.voltage){
               case 220:
                 that.img='shape=image;image=/static/mx/wss-img/220.png;'
+                  if(that.dist === '承德市'){
+                  that.img='shape=image;image=/static/mx/wss-img/cd220.png;'
+                }
                 break
               case 110:
                 that.img='shape=image;image=/static/mx/wss-img/110.png;'
                 if(that.dist === '承德市'){
-                  labelWidth = 40
-                  labelHeight = 20
-                }else{
-                  labelWidth = 150
-                  labelHeight = 66.9
-                 }
+                  that.img='shape=image;image=/static/mx/wss-img/cd110.png;'
+                  labelWidth = 35
+                  labelHeight =35
+                }
                 break
               case 35:
                 that.img='shape=image;image=/static/mx/wss-img/35.png;'
+                if(that.dist === '承德市'){
+                  that.img='shape=image;image=/static/mx/wss-img/cd35.png;'
+                }
                 break
             }
           }
@@ -1661,13 +1799,29 @@ export default {
             }
            // 画连线   mxGraph.insertEdge(parent, id, value, source, target, style) 
             let el = that.graph.insertEdge(that.parent, li.id, li.fline, p1.point_s, p2.point_s, color)
+           
+            // var length = li.guai.length
+            // var p_s =that.graph.insertVertex(that.parent, null, null,li.guai[0].x,li.guai[0].y,1,1)
+            // var p_t =that.graph.insertVertex(that.parent, null, null,li.guai[length-1].x,li.guai[length-1].y,1,1)
+            //  let el = that.graph.insertEdge(that.parent, li.id, li.fline, p_s, p_t, color)
+              var arr =[]
+              // if(length>2){
+              // for(let i = 1;1<length-2;i++){
+              //   arr.push(new mxPoint(li.guai[i].x, li.guai[i].y))
+              // }
+              // }
             for (let guai of li.guai) {
               if(guai !=null){
-                el.geometry.points = [new mxPoint(guai.x, guai.y)]
+                 arr.push(new mxPoint(guai.x, guai.y))
               }
             }
+                el.geometry.points = arr
           }
       }
+        } finally {
+          that.graph.getModel().endUpdate()
+        }
+   
     },
     // 点击【承德市】按钮
     click(){
@@ -1730,8 +1884,7 @@ export default {
     onLine(sp,tp){
         var that = this
               // mqtt 发送消息
-       that.msg = "{\"client\":\"left middle right\",\"actionType\":\"switch_line\",\"parameters\":{\"source\":\""+sp+"\", \"target\":\""+tp+"\", \"dist\":\""+that.dist+"\"}}"
-                // this.msg = "{\"client\":\"middle\",\"actionType\":\"switch_zoom\",\"parameters\":{\"action\":\"放大\"}}"
+       that.msg = "{\"client\":\"left right\",\"actionType\":\"switch_line\",\"parameters\":{\"source\":\""+sp+"\", \"target\":\""+tp+"\", \"dist\":\""+that.dist+"\"}}"
        that.sendMsg(that.msg)
     },
     //画承德市内的界限
@@ -1793,7 +1946,8 @@ export default {
 }
 </script>
 
- <style >
+
+ <style scoped>
 
 .body{
   touch-action: none;
@@ -1801,7 +1955,7 @@ export default {
 #web-body{
   height: 1081px;
   width: 1921px;
- background:url('./images/bgmain.png');
+ background:url('/static/bdmap/images/bgmain.png');
  text-decoration-color: transparent;
 }
 #web-header{
@@ -1812,51 +1966,8 @@ export default {
 #web-main{
   margin-top:20px;
   margin-left:10px;
-}
-#bt_big{
-  background: url('./images/big2.png');
-  width: 80px;
-  height: 69px;
-}
-#bt_small{
-  background: url('./images/small2.png');
-  width: 80px;
-  height: 69px;
-}
-#bt_cd{
-  background: url('./images/bt_cd.png');
-  width: 151px;
-  height: 71px;
-  margin-right: 10px;
-
-}
-#select_qx{
-  background: url('./images/select_qx.png');
-   width: 199px;
-  height: 71px;
-  font-size: 28px;
-  font-weight: 800;
-  color:#3D3D3D;
-  font-family: '黑体';
-  left:0px;
-  position: absolute;
-
-}
-#bt_qx{
-  background: url('./images/bt_qx2.png');
-  width: 151px;
-  height: 71px;
-  margin-left: 10px;
-}
-#bt_web{
-  background: url('./images/bt_web2.png');
-  width: 149px;
-  height: 69px;
-}
-#bt_map{
-  background: url('./images/bt_map.png');
-  width: 149px;
-  height: 69px;
+  width: 1921px;
+  height: 900px;
 }
 #graphContainer {
   position: absolute;
@@ -1885,7 +1996,6 @@ export default {
   left: 1082px; 
   width: 400px;
   height: 300px;
-  background:url('/static/mx/wss-img/dot.gif');
   overflow:hidden;
   z-index: 1;
 }
@@ -1897,10 +2007,15 @@ export default {
 }
 #bt_detail {
   position: absolute;
-  left: 30px;
+  left: 100px;
   top:150px;
   width: 1200px;
   z-index: 4; 
+}
+#bt_data {
+  position: absolute;
+  left: 100px;
+  top:250px;
 }
 #select{
   position: absolute;
@@ -1968,6 +2083,43 @@ left:1300px;
  width: 159px;
  height: 59px;
 }
+#bt_big{
+  background: url('./images/big2.png');
+  width: 80px;
+  height: 69px;
+}
+#bt_small{
+  background: url('./images/small2.png');
+  width: 80px;
+  height: 69px;
+}
+#bt_cd{
+  background: url('./images/bt_cd.png');
+  width: 151px;
+  height: 71px;
+  margin-right: 10px;
+
+}
+#select_qx{
+
+}
+#bt_qx{
+  background: url('./images/bt_qx2.png');
+  width: 151px;
+  height: 71px;
+  margin-left: 10px;
+}
+#bt_web{
+  background: url('./images/bt_web2.png');
+  width: 149px;
+  height: 69px;
+}
+#bt_map{
+  background: url('./images/bt_map.png');
+  width: 149px;
+  height: 69px;
+}
+
 #map_control{
   position: absolute;
  width: 300px;
@@ -2002,10 +2154,41 @@ left:1300px;
 .canshu2{
   padding-top:20px;
 }
+#tabs{
+  background: cadetblue
+}
 
 </style>
     <style>/*去除百度地图版权*/
     .anchorBL{
         display:none;
     }
+
+    #select_qx{
+  background: url('./images/select_qx.png');
+   width: 199px;
+  height: 71px;
+  font-size: 28px;
+  font-weight: 800;
+  color:#3D3D3D;
+  font-family: '黑体';
+  left:0px;
+  position: absolute;
+}
+    #select1{
+  background-color: cadetblue;
+  font-family: '黑体';
+  color: black; 
+  font-size: 20px;
+  width: 150px;
+  margin-left: 20px;
+  
+}
+#select2{
+  background-color: cadetblue;
+  font-family: '黑体';
+  color: black;  
+  width: 150px;
+  font-size: 20px;
+}
     </style>
