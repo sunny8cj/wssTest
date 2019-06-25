@@ -74,10 +74,10 @@ span{
         <!--<button  style="float:left;" @click="drawLine('my513')">my513</button>-->
         <!--&lt;!&ndash;<button  style="float:left;" @click="drawLine('yd511')">yd511</button>&ndash;&gt;-->
         <!--<button  style="float:left;" @click=" drawCD()">承德市</button>-->
-        <button  style="float:left;" @click=" show_DataWindow(150677000000003)">设备点1</button>
-        <button  style="float:left;" @click=" drawPoint(150677000000003)">设备点2</button>
-        <button  style="float:left;" @click=" drawPoint(200677000000009)">设备点3</button>
-        <button  style="float:left;" @click=" drawPoint(130677000000032)">设备点4</button>
+        <!--<button  style="float:left;" @click=" show_DataWindow(150677000000003)">设备点1</button>-->
+        <!--<button  style="float:left;" @click=" drawPoint(150677000000003)">设备点2</button>-->
+        <!--<button  style="float:left;" @click=" drawPoint(200677000000009)">设备点3</button>-->
+        <!--<button  style="float:left;" @click=" drawPoint(130677000000032)">设备点4</button>-->
 
         <!--<button  style="float:left;" @click="activeName = 'second'">运行数据</button>-->
         <!--<button  style="float:left;" @click="zoomIn()">放大</button>-->
@@ -212,16 +212,7 @@ span{
                     实时负载率:{{xl.currentLoading}}<br>
                 </div>
             </el-tab-pane>
-            <el-tab-pane label="运行数据" name="second">
-                <div v-if="type==='变电站'">
-                </div>
-                <div v-else-if="type==='电缆分接箱'">
-                </div>
-                <div v-else-if="type==='开闭站'">
-                </div>
-                <div v-else-if="type==='线路'">
-                </div>
-            </el-tab-pane>
+
             <el-tab-pane label="其他数据" name="third">
                 <div v-if="type==='变电站'">
                     电站简称:{{this.bdz.abbr_name}} <br>
@@ -461,12 +452,14 @@ span{
             line_l:[],
             line_s:null,
             allMarker:[],
+            gt_guai:[],
             selectedDist:[],
             selectedPoint:[],
             selectedPoint2:[],//选中的那个点
             selectedLine:[],
             selectedLine_s:[],
             scopePoint:[], // 画供电范围的点
+            dist_graph:'',
             dist:'',
             flines:[],
             pb:[],
@@ -632,6 +625,7 @@ span{
             drawCD(){
                 this.dist = '承德市'
                 this.flines = []
+                this.dist_graph = '承德市'
                 document.getElementById('tabs').style.display ='none'
                 this.map.removeOverlay(this.heatmapOverlay)
 			    if(this.allMarker.length != 0){
@@ -662,6 +656,7 @@ span{
                         this.map.removeOverlay(item)  // 先清理地图上的所选线路
                     }
                 }
+                this.map.closeInfoWindow()
                 var that = this
 
                 // 画承德市的点
@@ -738,8 +733,7 @@ span{
 					     dd.push(p)
                            var icon = new BMap.Icon('./images/gt.png', new BMap.Size(21, 21), { fillOpacity: 0.5, anchor: new BMap.Size(12, 12) })
                            var mm = new BMap.Marker(p, { icon: icon ,title:p.name})
-                           this.map.addOverlay(mm)
-                           this.allMarker.push(mm)
+                         this.gt_guai.push(mm)
 					   }
 					  dd.push(p2)
 					  //画连线
@@ -792,67 +786,113 @@ span{
                         this.map.removeOverlay(po)
                     }
                     this.checkbox1 = []
-                    // alert(z)   // 11  13 15
+                    // alert(z)   // 11  12 14
+                    if(this.dist_graph == '承德市'){
+                        // 14级的时候显示杆塔
+                        for(let g of this.gt_guai){
+                            this.map.removeOverlay(g)
+                            if(z>13){
+                                this.map.addOverlay(g)
+                            }
+                        }
+                    }else {
+                        for(let g of this.gt_guai){
+                            this.map.removeOverlay(g)
+                        }
+                    }
+                    // 判断什么层级的时候出点
                     for (let po of point){
                         this.map.removeOverlay(po.marker)
+                        po.isShow = 'false'
                         switch(po.voltage){
                             case 35:
-                                if (z >14) {this.map.addOverlay(po.marker) }
+                                if (z >13) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
                                 break
                             case 110:
-                                if (z>12) {this.map.addOverlay(po.marker) }
+                                if (z>11) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'}
                                 break
                             case 220:
-                                if (z>10) { this.map.addOverlay(po.marker) }
+                                if (z>10) { this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
                                 break
                             case 500:
-                                if (z >10) { this.map.addOverlay(po.marker) }
+                                if (z >10) { this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
+                                break
+                            default:  //其他电压等级为null 的设备，如开闭站，电分等
+                                if (z >13) {this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
                                 break
                         }
-                        switch(po.type){
-                            case '开闭站':
-                                if (z >14) {this.map.addOverlay(po.marker) }
-                                break
-                            case '环网柜':
-                                if (z>14) {this.map.addOverlay(po.marker) }
-                                break
-                            case '熔断器':
-                                if (z>14) {this.map.addOverlay(po.marker) }
-                                break
-                            case '配电室':
-                                if (z>14) {this.map.addOverlay(po.marker) }
-                                break
-                            case '电缆分接箱':
-                                if (z>14) {this.map.addOverlay(po.marker) }
-                                break
-                            case '箱式变电站':
-                                if (z>14) {this.map.addOverlay(po.marker) }
-                                break
-                            case '配变':
-                                if (z>14) { this.map.addOverlay(po.marker) }
-                                break
-                            case '杆塔':
-                                if (z >14) { this.map.addOverlay(po.marker) }
-                                break
-                        }
+//                        switch(po.type){
+//                            case '开闭站':
+//                                if (z >14) {this.map.addOverlay(po.marker) }
+//                                break
+//                            case '环网柜':
+//                                if (z>14) {this.map.addOverlay(po.marker) }
+//                                break
+//                            case '熔断器':
+//                                if (z>14) {this.map.addOverlay(po.marker) }
+//                                break
+//                            case '配电室':
+//                                if (z>14) {this.map.addOverlay(po.marker) }
+//                                break
+//                            case '电缆分接箱':
+//                                if (z>14) {this.map.addOverlay(po.marker) }
+//                                break
+//                            case '箱式变电站':
+//                                if (z>14) {this.map.addOverlay(po.marker) }
+//                                break
+//                            case '配变':
+//                                if (z>14) { this.map.addOverlay(po.marker) }
+//                                break
+//                            case '杆塔':
+//                                if (z >14) { this.map.addOverlay(po.marker) }
+//                                break
+//                        }
                     }
                     for (let li of line){
                         this.map.removeOverlay(li.line)
-                        switch(li.voltage){
-                            case 220:
-                                if (z>10) {this.map.addOverlay(li.line) }
-                                break
-                            case 110:
-                                if (z>12) {this.map.addOverlay(li.line) }
-                                break
-                            case 35:
-                                if (z >14) {  this.map.addOverlay(li.line) }
-                                break
-                            default:   // 其他都是单线图
-                                if (z >14) {  this.map.addOverlay(li.line) }
-                                break
+                        // 如果checkbox1包括source.voltage target.volget， 则这条线出现
+                        var p1,p2
+                        for(let po of point){
+                            if(po.id === li.source){
+                                p1 = po
+                            }else if(po.id === li.target){
+                                p2 = po
+                            }
                         }
+
+                        if((p1.isShow === 'true')&&(p2.isShow === 'true')){
+                            this.map.addOverlay(li.line)
+                        }
+
                     }
+//                    for (let li of line){
+//                        this.map.removeOverlay(li.line)
+//                        switch(li.voltage){
+//                            case 220:
+//                                if (z>10) {this.map.addOverlay(li.line) }
+//                                break
+//                            case 110:
+//                                if (z>12) {this.map.addOverlay(li.line) }
+//                                break
+//                            case 35:
+//                                if (z >14) {  this.map.addOverlay(li.line) }
+//                                break
+//                            default:   // 其他都是单线图
+//                                if (z >14) {  this.map.addOverlay(li.line) }
+//                                break
+//                        }
+//                    }
                 }
                 // 多选
                 if(e === 2){
@@ -900,6 +940,21 @@ span{
                                 }
                             }else if(po.type ==='环网柜'){
                                 if (this.checkbox1.indexOf('环网柜') >= 0) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
+                            }else if(po.type ==='箱式变压器'){
+                                if (this.checkbox1.indexOf('箱式变压器') >= 0) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
+                            }else if(po.type ==='电缆分接箱'){
+                                if (this.checkbox1.indexOf('电缆分接箱') >= 0) {
+                                    this.map.addOverlay(po.marker)
+                                    po.isShow='true'
+                                }
+                            }else if(po.type ==='配电室'){
+                                if (this.checkbox1.indexOf('配电室') >= 0) {
                                     this.map.addOverlay(po.marker)
                                     po.isShow='true'
                                 }
@@ -1153,7 +1208,7 @@ span{
                         this.map.removeOverlay(item)  // 先清理地图上的所选线路
                     }
                 }
-
+                this.map.closeInfoWindow()
                 // 选中的设备信息从接口获取的话，就直接是结果data
                 var that =this
                 $.ajax({
@@ -1274,6 +1329,7 @@ span{
                 this.getDistData(_dist)
                 this.dist = _dist
                 this.flines = []
+                this.dist_graph = _dist
                 document.getElementById('tabs').style.display ='none'
                 this.map.removeOverlay(this.heatmapOverlay)
                 var that = this
@@ -1303,7 +1359,7 @@ span{
                     }
                 }
 				this.onCd2(this.dist)
-
+                this.map.closeInfoWindow()
                     var center =''
                     switch(_dist){
                         case "营子区":
@@ -1316,7 +1372,7 @@ span{
                             var center = new BMap.Point(117.801116,40.96473)
                             break
                         case "高新区":
-                            var center = new BMap.Point(118.001196,40.770489)
+                            var center = new BMap.Point(117.981196,40.920489)
                             break
                     }
                     this.map.centerAndZoom(center,15)
@@ -1411,7 +1467,7 @@ span{
 
             //画整条线路 如 ml512 yd511
             drawLine(_line){
-
+                this.dist_graph = _line
                 this.flines.push(_line)
                 this.getLine(_line)  // 获取线路点线
                 this.getLineData(_line)  // 获取线路数据
@@ -1445,6 +1501,7 @@ span{
                         this.map.removeOverlay(item)  // 先清理地图上的所选线路
                     }
                 }
+                this.map.closeInfoWindow()  // 关闭信息窗
                 //1. 画出该线路上的所有点 包括配变、开闭站、环网柜、杆塔
                 console.log(this.point_l)
                 for(let po of this.point_l){
