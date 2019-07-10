@@ -67,10 +67,10 @@
         </div>
           <br>
         <div id="map_control">
-          <el-button id="bt_zd" :type="zd_bg" size="small" style="width:100px" @click="showInfo(1)">自动</el-button>
+          <el-button id="bt_zd" :type="zd_bg" size="small" style="width:100px" @click="fy(1)">自动</el-button>
           <!-- <el-button  type="success" size="small" style="width:100px" @click="showLabel()">显示label</el-button> -->
           <br>
-          <el-checkbox-group v-model="checkbox1" size="small" style="margin-top:10px" @change="showInfo(2)">
+          <el-checkbox-group v-model="checkbox1" size="small" style="margin-top:10px" @change="fy(2)">
           <el-checkbox-button label="500" style="width:70px">500kv</el-checkbox-button>
           <el-checkbox-button label="220" style="width:70px">220kv</el-checkbox-button>
           <el-checkbox-button label="110" style="width:70px">110kv</el-checkbox-button>
@@ -326,7 +326,8 @@ export default {
       client: '', //mqtt 
       topic: 'gridmap' ,// 订阅的主题,
       heatPoints:[],
-      heatmapOverlay:null
+      heatmapOverlay:null,
+      check_type:1  // 自动 1，多选2
     }
   },
   mounted () {
@@ -862,8 +863,8 @@ export default {
       //   that.openInfo(x,y,content)
       // })
       }
-      this.map.centerAndZoom(new BMap.Point(117.972845,40.955677),11)
-      this.showInfo(1)
+      this.map.centerAndZoom(new BMap.Point(117.972845,41.23822764),11)
+      this.fy(1)
     },
     //展示信息窗口
     openInfo(x,y,content){
@@ -1055,7 +1056,7 @@ export default {
 
           }
         that.map.centerAndZoom(center,15)
-          this.showInfo(1)
+          this.fy(1)
     },
     // 获取地理图线路坐标和连线
     getLine(_line){
@@ -1231,7 +1232,7 @@ export default {
 
               }
               this.map.centerAndZoom(p1,16); // 放大居中
-              this.showInfo(1)
+              this.fy(1)
     },
   // 地理图为主窗口
     change1 () {
@@ -1281,6 +1282,10 @@ export default {
         this.d2.style.display = 'none'
       }
     },
+    fy(e){
+      this.check_type = e
+      this.showInfo(this.check_type)
+    },
     showInfo (e) {
       var z = this.map.getZoom()
       var point =[]
@@ -1300,10 +1305,11 @@ export default {
       }
       // 自动
       if(e ===1){
-         this.zd_bg = 'primary'
+        this.zd_bg = 'primary'
         this.checkbox1 = []
-         this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"自动\"}}"
+        this.msg = "{\"client\":\"middle\", \"actionType\":\"switch_showinfo\", \"parameters\":{\"type\":\"自动\"}}"
         this.sendMsg(this.msg)
+        let string_type = '配电站，电缆分支箱、箱式变电站、开关站、环网柜'
       // alert(z)   // 11  12 14
           if(this.dist_graph == '承德市'){
         // 14级的时候显示杆塔
@@ -1346,12 +1352,17 @@ export default {
               }
               break
             default:  //其他电压等级为null 的设备，如开闭站，电分等
-              if(po.type == '杆塔'){
+              if(po.type == '杆塔'){              // 杆塔 17级显示
                 if (z >16) {this.map.addOverlay(po.marker) 
                   po.isShow='true'
                 }
-              }else{
-                if (z >13) {this.map.addOverlay(po.marker) 
+              }else if(string_type.indexOf(po.type) != -1){        // 电分、开闭站、环网柜 等 15级显示
+                if (z >14) {this.map.addOverlay(po.marker) 
+                    po.isShow='true'
+                }
+              }
+              else{                    //熔断器、变压器、断路器、隔离开关、终端头等 16级显示
+                if (z >15) {this.map.addOverlay(po.marker) 
                     po.isShow='true'
                 }
               }
@@ -1499,18 +1510,40 @@ export default {
       } else {
    
       // 画地图
-        let map = new BMap.Map('map')
-        this.map = map
+        let map = new BMap.Map('map',{minZoom:9, maxZoom:19}) //最小级别9
+        this.map = map 
         map.setCurrentCity('承德')
-        map.enableScrollWheelZoom() // 允许鼠标缩放
-        map.centerAndZoom(new BMap.Point(117.972845,40.955677),10)
+        map.enableScrollWheelZoom();   //启用滚轮缩放，默认禁用
+	      map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用
+        map.centerAndZoom(new BMap.Point(117.418261, 39.921984),10)
+        // map.setMapStyle({style:'midnight'});  // 地图背景色设置
         this.getCd() // 画承德市地理图
         this.onCd1()
+      // 地理图滚轮事件和平移事件 监听
+        var that = this
+        map.addEventListener('zoomend', function(){
+          let z = map.getZoom()
+          let pos=map.getCenter(); // 获取地图的中心点
+           that.msg = "{\"client\":\"middle\", \"actionType\":\"switch_zoom\", \"parameters\":{\"zoom\":\""+z+"\",\"lng\":\""+pos.lng+"\",\"lat\":\""+pos.lat+"\"}}"
+           that.sendMsg(that.msg)
+          console.log(z,pos.lat,pos.lng)
+          that.showInfo(that.check_type)
+        })
+        // map.addEventListener("click",function(e){
+        //   alert(e.point.lng + "," + e.point.lat);
+        // });
+        this.map.addEventListener("dragend",(e)=>{
+            let z = map.getZoom()
+            let pos=map.getCenter(); // 获取地图的中心点
+           that.msg = "{\"client\":\"middle\", \"actionType\":\"switch_zoom\", \"parameters\":{\"zoom\":\""+z+"\",\"lng\":\""+pos.lng+"\",\"lat\":\""+pos.lat+"\"}}"
+            that.sendMsg(that.msg)
+            console.log(pos.lat,pos.lng)
+        },false);
 
         // 画网架图
         this.graph = new mxGraph(container)
       
-        // this.graph.setEnabled(true) // 图元是否可移动
+        this.graph.setEnabled(false) // 图元是否可移动
         // this.graph.setAutoSizeCells(true)
         
         // this.graph.panningHandler.useLeftButtonForPanning = true //左键移动
@@ -1555,9 +1588,9 @@ export default {
            y2 = evt.properties.event.offsetY
            shiftX = x2-x1
            shiftY = y2-y1
-          //  // 偏移量
-          //  that.msg = "{\"client\":\"left\", \"actionType\":\"shift\", \"parameters\":{\"x\":\""+shiftX+"\",\"y\":\""+shiftY+"\"}}"
-          //  that.sendMsg(that.msg)
+          //  // 偏移量  平移
+           that.msg = "{\"client\":\"left\", \"actionType\":\"shift\", \"parameters\":{\"x\":\""+shiftX+"\",\"y\":\""+shiftY+"\"}}"
+           that.sendMsg(that.msg)
           that.cell = evt.getProperty('cell')
           if(typeof that.cell != 'object') return
           let properDiv= document.getElementById('properties')
